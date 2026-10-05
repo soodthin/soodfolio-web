@@ -96,7 +96,7 @@ function LoginForm() {
               <label className="text-[#a6bbe7] uppercase tracking-wider block">
                 Password
               </label>
-              <span className="text-[10px] text-[#6c82b5]">Demo: Password123!</span>
+              <span className="text-[10px] text-[#6c82b5]">Demo: alex / Admin123</span>
             </div>
             <input
               type="password"
