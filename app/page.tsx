@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HomePage() {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
   const [searchUsername, setSearchUsername] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
@@ -33,10 +35,34 @@ export default function HomePage() {
           <div className="flex items-center gap-3 font-mono text-xs">
             <a
               href="/alex"
-              className="px-3.5 py-1.5 rounded-lg border border-[#2b3f78] bg-[#0e193d] hover:border-[#f8c076] hover:text-[#f8c076] transition-colors"
+              className="hidden sm:inline-block px-3.5 py-1.5 rounded-lg border border-[#2b3f78] bg-[#0e193d] hover:border-[#8cb0fd] text-[#8cb0fd] transition-colors"
             >
               [ Live Demo: @alex ]
             </a>
+
+            {isAuthenticated ? (
+              <a
+                href="/dashboard"
+                className="px-3.5 py-1.5 rounded-lg bg-[#f8c076] text-[#0b1124] font-bold hover:bg-[#ffcf8e] transition-colors"
+              >
+                Dashboard (@{user?.username}) ↗
+              </a>
+            ) : (
+              <>
+                <a
+                  href="/login"
+                  className="px-3 py-1.5 rounded-lg text-[#8cb0fd] hover:text-white transition-colors"
+                >
+                  Sign In
+                </a>
+                <a
+                  href="/register"
+                  className="px-3.5 py-1.5 rounded-lg bg-[#f8c076] text-[#0b1124] font-bold hover:bg-[#ffcf8e] transition-colors"
+                >
+                  Create Portfolio ↗
+                </a>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -64,8 +90,24 @@ export default function HomePage() {
           </p>
         </div>
 
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 font-mono text-xs">
+          <a
+            href="/register"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#f8c076] text-[#0b1124] font-bold hover:bg-[#ffcf8e] transition-all shadow-[0_0_25px_rgba(248,192,118,0.3)] text-sm"
+          >
+            [ Create Your Free Portfolio ↗ ]
+          </a>
+          <a
+            href="/alex"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[#3b5394] bg-[#101b3d] hover:border-[#8cb0fd] text-[#8cb0fd] hover:text-white transition-all text-sm font-semibold"
+          >
+            [ View Demo Slide Deck: @alex ]
+          </a>
+        </div>
+
         {/* Quick Search Handle Form */}
-        <form onSubmit={handleSearch} className="w-full max-w-md space-y-2">
+        <form onSubmit={handleSearch} className="w-full max-w-md space-y-2 pt-2">
           <div className="relative flex items-center rounded-2xl border border-[#314a88] bg-[#0d1633] p-1.5 shadow-[0_15px_35px_rgba(0,0,0,0.6)] focus-within:border-[#f8c076] transition-colors">
             <span className="pl-3.5 font-mono text-sm text-[#7a90c5]">soodfolio.com/</span>
             <input
