@@ -1,7 +1,7 @@
-export interface SocialLinkDto {
+﻿export interface SocialLinkDto {
   platform: string;
   url: string;
-  label: string;
+  label?: string | null;
 }
 
 export interface ExperienceDto {
@@ -9,11 +9,11 @@ export interface ExperienceDto {
   roleTitle: string;
   companyName: string;
   companyUrl?: string | null;
-  location: string;
-  periodText: string;
-  description: string;
-  highlights: string[];
-  skillsUsed: string[];
+  location?: string | null;
+  periodText?: string | null;
+  description?: string | null;
+  highlights?: string[];
+  skillsUsed?: string[];
 }
 
 export interface ProjectDto {
@@ -21,10 +21,10 @@ export interface ProjectDto {
   title: string;
   subtitle?: string | null;
   role?: string | null;
-  periodText: string;
-  description: string;
-  highlights: string[];
-  techStack: string[];
+  periodText?: string | null;
+  description?: string | null;
+  highlights?: string[];
+  techStack?: string[];
   liveUrl?: string | null;
   githubUrl?: string | null;
   imageUrl?: string | null;
@@ -39,21 +39,25 @@ export interface SkillDto {
 export interface EducationDto {
   id: string;
   institution: string;
-  degree: string;
-  fieldOfStudy: string;
-  periodText: string;
+  degree?: string | null;
+  fieldOfStudy?: string | null;
+  periodText?: string | null;
   highlights?: string | null;
 }
 
 export interface PortfolioData {
   id: string;
   username: string;
+  fullName?: string | null;
+  avatarUrl?: string | null;
   title: string;
-  tagline: string;
-  bio: string;
-  statusText: string;
+  tagline?: string | null;
+  bio?: string | null;
+  statusText?: string | null;
   resumeUrl?: string | null;
-  themeMode: string;
+  themeMode?: string | null;
+  isPublished?: boolean;
+  totalViews?: number;
   showExperience: boolean;
   showProjects: boolean;
   showSkills: boolean;
