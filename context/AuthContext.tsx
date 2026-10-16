@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AuthUser, AuthResponse, getAuthUser, getAuthToken, setAuthSession, clearAuthSession, API_BASE, getRefreshToken } from '@/lib/auth';
 
 interface AuthContextType {
@@ -8,7 +8,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (authData: AuthResponse) => void;
+  login: (authData: AuthResponse, rememberMe?: boolean) => void;
   logout: () => Promise<void>;
 }
 
@@ -30,13 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (authData: AuthResponse) => {
-    setAuthSession(authData);
+  const login = useCallback((authData: AuthResponse, rememberMe: boolean = true) => {
+    setAuthSession(authData, rememberMe);
     setUser(authData.user);
     setToken(authData.accessToken);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     const refreshToken = getRefreshToken();
     if (refreshToken) {
       try {
@@ -46,13 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({ refreshToken }),
         });
       } catch (err) {
-        console.error('Logout error on backend:', err);
+        console.warn('Logout error on backend:', err);
       }
     }
     clearAuthSession();
     setUser(null);
     setToken(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

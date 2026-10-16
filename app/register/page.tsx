@@ -1,9 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useId } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { API_BASE, AuthResponse, ApiErrorResponse } from '@/lib/auth';
+import { AuthLayout } from '@/components/auth/AuthLayout';
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
+import { 
+  User, 
+  AtSign, 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  ArrowRight, 
+  Loader2, 
+  AlertCircle,
+  CheckCircle2
+} from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -13,179 +28,326 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [agreeTerms, setAgreeTerms] = useState(true);
 
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Live Password strength calculation
+  const getPasswordStrength = () => {
+    if (!password) return 0;
+    let score = 0;
+    if (password.length >= 6) score += 1;
+    if (password.length >= 10) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) score += 1;
+    return score; // 0 to 4
+  };
+
+  const passwordScore = getPasswordStrength();
+
+  // Username validation helper
+  const isUsernameValid = (name: string) => /^[a-z0-9_-]{3,30}$/.test(name);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setErrorMessage(null);
-    setFieldErrors({});
+
+    // Frontend validation
+    if (!fullName.trim() || !username.trim() || !email.trim() || !password) {
+      setErrorMessage('Vui lòng điền đầy đủ tất cả các trường.');
+      return;
+    }
+
+    const cleanUsername = username.trim().toLowerCase();
+    if (!isUsernameValid(cleanUsername)) {
+      setErrorMessage('Tên người dùng phải có từ 3-30 ký tự thường, số, dấu gạch nối hoặc gạch dưới.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage('Mật khẩu tối thiểu phải từ 6 ký tự trở lên.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
+    if (!agreeTerms) {
+      setErrorMessage('Vui lòng đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.');
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, username, email, password }),
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          username: cleanUsername,
+          email: email.trim().toLowerCase(),
+          password,
+        }),
       });
 
       if (!res.ok) {
         const errorData: ApiErrorResponse = await res.json().catch(() => ({
-          message: 'Registration failed. Please check your information.',
+          timestamp: '',
           status: res.status,
           error: 'Error',
-          timestamp: '',
+          message: 'Đăng ký không thành công. Vui lòng kiểm tra lại.',
           path: '',
         }));
 
+        let msg = errorData.message || 'Không thể tạo tài khoản.';
         if (errorData.validationErrors) {
-          setFieldErrors(errorData.validationErrors);
+          const firstKey = Object.keys(errorData.validationErrors)[0];
+          msg = errorData.validationErrors[firstKey] || msg;
         }
-        setErrorMessage(errorData.message || 'Registration failed.');
+        setErrorMessage(msg);
         setIsLoading(false);
         return;
       }
 
       const authData: AuthResponse = await res.json();
-      // Auto-login upon registration & redirect to dashboard!
       login(authData);
       router.push('/dashboard');
     } catch (err) {
       console.error('Registration failed:', err);
-      setErrorMessage('Cannot connect to server. Please check your backend connection.');
+      setErrorMessage('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại backend.');
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-[#0b1124] text-[#ebe7ff]">
-      {/* Background glow */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_75%_50%_at_50%_35%,rgba(95,75,170,0.35),transparent)] pointer-events-none" />
+    <AuthLayout
+      title="Khởi tạo tài khoản"
+      subtitle="Bắt đầu xây dựng portfolio dạng slide deck chuẩn kỹ sư và chia sẻ tác phẩm của bạn."
+      badgeText="ONBOARDING"
+    >
+      <div className="space-y-5">
+        {/* Social Quick Auth */}
+        <SocialAuthButtons />
 
-      <div className="relative w-full max-w-lg rounded-2xl border border-[#293d79] bg-[#0c142e]/95 backdrop-blur-md p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.9)] space-y-6">
-        {/* Header */}
-        <div className="space-y-1.5 text-center">
-          <div className="inline-flex items-center gap-2 font-mono text-xs text-[#f8c076] tracking-widest uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#f8c076] animate-pulse" />
-            <span>CLAIM YOUR DEVELOPER HANDLE</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-sans font-bold text-white uppercase tracking-tight">
-            CREATE ACCOUNT
-          </h1>
-          <p className="text-xs font-mono text-[#8cb0fd]">
-            Build your presentation portfolio on soodfolio.com/
-            <span className="text-[#f8c076]">{username || 'your-name'}</span>
-          </p>
-        </div>
-
-        {/* Error Alert */}
+        {/* Error notification banner */}
         {errorMessage && (
-          <div className="rounded-xl border border-rose-500/40 bg-rose-950/40 p-3 text-xs font-mono text-rose-300 flex items-start gap-2">
-            <span className="font-bold text-rose-400">[!]</span>
-            <span>{errorMessage}</span>
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs sm:text-sm flex items-start gap-2.5 animate-in fade-in duration-200">
+            <AlertCircle className="h-4 w-4 text-rose-400 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 leading-relaxed">{errorMessage}</div>
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3.5 font-mono text-xs">
-          <div className="space-y-1">
-            <label className="text-[#a6bbe7] uppercase tracking-wider block">
-              Full Name
+        {/* Registration Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          {/* Full Name */}
+          <div className="space-y-1.5">
+            <label 
+              htmlFor="fullName"
+              className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-medium"
+            >
+              Họ và tên
             </label>
-            <input
-              type="text"
-              required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="e.g. John Doe"
-              className="w-full rounded-xl border border-[#2b417e] bg-[#091024] px-3.5 py-2.5 text-white placeholder-[#4c6196] focus:border-[#f8c076] focus:outline-none transition-colors"
-            />
-            {fieldErrors.fullName && (
-              <span className="text-rose-400 text-[10px]">{fieldErrors.fullName}</span>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-400 transition-colors">
+                <User className="h-4 w-4" />
+              </div>
+              <input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Nguyễn Văn A"
+                required
+                className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#12141d] border border-white/10 hover:border-white/20 focus:border-teal-500/80 focus:ring-2 focus:ring-teal-500/20 text-white placeholder:text-slate-400 text-sm transition-all duration-200 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Username with Live URL Preview */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label 
+                htmlFor="username"
+                className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-medium"
+              >
+                Tên người dùng (URL Profile)
+              </label>
+              {username && (
+                <span className="text-[11px] font-mono text-teal-400/90">
+                  soodfolio.dev/{username.toLowerCase()}
+                </span>
+              )}
+            </div>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-400 transition-colors">
+                <AtSign className="h-4 w-4" />
+              </div>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                placeholder="alexvance"
+                required
+                className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#12141d] border border-white/10 hover:border-white/20 focus:border-teal-500/80 focus:ring-2 focus:ring-teal-500/20 text-white placeholder:text-slate-400 text-sm font-mono transition-all duration-200 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Email Address */}
+          <div className="space-y-1.5">
+            <label 
+              htmlFor="email"
+              className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-medium"
+            >
+              Địa chỉ Email
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-400 transition-colors">
+                <Mail className="h-4 w-4" />
+              </div>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="alex@example.com"
+                required
+                className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#12141d] border border-white/10 hover:border-white/20 focus:border-teal-500/80 focus:ring-2 focus:ring-teal-500/20 text-white placeholder:text-slate-400 text-sm transition-all duration-200 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Password & Strength Meter */}
+          <div className="space-y-1.5">
+            <label 
+              htmlFor="password"
+              className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-medium"
+            >
+              Mật khẩu (Tối thiểu 6 ký tự)
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-400 transition-colors">
+                <Lock className="h-4 w-4" />
+              </div>
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Tối thiểu 6 ký tự"
+                required
+                className="w-full h-11 pl-10 pr-11 rounded-xl bg-[#12141d] border border-white/10 hover:border-white/20 focus:border-teal-500/80 focus:ring-2 focus:ring-teal-500/20 text-white placeholder:text-slate-400 text-sm transition-all duration-200 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 cursor-pointer transition-colors"
+                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+
+            {/* Strength meter bars */}
+            {password.length > 0 && (
+              <div className="pt-1.5 space-y-1">
+                <div className="grid grid-cols-4 gap-1.5">
+                  <div className={`h-1 rounded-full transition-colors ${passwordScore >= 1 ? 'bg-teal-400' : 'bg-white/10'}`} />
+                  <div className={`h-1 rounded-full transition-colors ${passwordScore >= 2 ? 'bg-teal-400' : 'bg-white/10'}`} />
+                  <div className={`h-1 rounded-full transition-colors ${passwordScore >= 3 ? 'bg-teal-400' : 'bg-white/10'}`} />
+                  <div className={`h-1 rounded-full transition-colors ${passwordScore >= 4 ? 'bg-emerald-400' : 'bg-white/10'}`} />
+                </div>
+                <div className="text-[10px] font-mono text-slate-400 flex justify-between">
+                  <span>Độ an toàn mật khẩu</span>
+                  <span className={passwordScore >= 4 ? 'text-emerald-400' : 'text-teal-400'}>
+                    {passwordScore <= 1 ? 'Yếu' : passwordScore <= 3 ? 'Trung bình' : 'Rất mạnh'}
+                  </span>
+                </div>
+              </div>
             )}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[#a6bbe7] uppercase tracking-wider block">
-              Username (Portfolio URL Handle)
+          {/* Confirm Password */}
+          <div className="space-y-1.5">
+            <label 
+              htmlFor="confirmPassword"
+              className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-medium"
+            >
+              Xác nhận mật khẩu
             </label>
-            <input
-              type="text"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-              placeholder="e.g. johndoe"
-              className="w-full rounded-xl border border-[#2b417e] bg-[#091024] px-3.5 py-2.5 text-white placeholder-[#4c6196] focus:border-[#f8c076] focus:outline-none transition-colors"
-            />
-            {fieldErrors.username && (
-              <span className="text-rose-400 text-[10px]">{fieldErrors.username}</span>
-            )}
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-400 transition-colors">
+                <Lock className="h-4 w-4" />
+              </div>
+              <input
+                id="confirmPassword"
+                type={showPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Nhập lại mật khẩu"
+                required
+                className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#12141d] border border-white/10 hover:border-white/20 focus:border-teal-500/80 focus:ring-2 focus:ring-teal-500/20 text-white placeholder:text-slate-400 text-sm transition-all duration-200 outline-none"
+              />
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[#a6bbe7] uppercase tracking-wider block">
-              Email Address
+          {/* Terms Agreement Checkbox */}
+          <div className="pt-1">
+            <label className="flex items-start gap-2.5 text-xs text-slate-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded bg-[#12141d] border-white/20 text-teal-500 focus:ring-teal-500/30 focus:ring-offset-0 cursor-pointer accent-teal-500"
+              />
+              <span className="leading-relaxed">
+                Tôi đồng ý với{' '}
+                <Link href="#" className="text-teal-400 hover:underline">Điều khoản dịch vụ</Link>
+                {' '}và{' '}
+                <Link href="#" className="text-teal-400 hover:underline">Chính sách bảo mật</Link>
+                {' '}của SoodFolio.
+              </span>
             </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. john@example.com"
-              className="w-full rounded-xl border border-[#2b417e] bg-[#091024] px-3.5 py-2.5 text-white placeholder-[#4c6196] focus:border-[#f8c076] focus:outline-none transition-colors"
-            />
-            {fieldErrors.email && (
-              <span className="text-rose-400 text-[10px]">{fieldErrors.email}</span>
-            )}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[#a6bbe7] uppercase tracking-wider block">
-              Password (Min 8 characters)
-            </label>
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              className="w-full rounded-xl border border-[#2b417e] bg-[#091024] px-3.5 py-2.5 text-white placeholder-[#4c6196] focus:border-[#f8c076] focus:outline-none transition-colors"
-            />
-            {fieldErrors.password && (
-              <span className="text-rose-400 text-[10px]">{fieldErrors.password}</span>
-            )}
-          </div>
-
+          {/* Submit Action Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-xl bg-[#f8c076] py-3 text-[#0b1124] font-bold uppercase tracking-wider hover:bg-[#ffcf8e] transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_20px_rgba(248,192,118,0.25)] mt-2"
+            className="w-full h-11 rounded-xl bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:from-teal-300 hover:via-teal-400 hover:to-teal-500 text-slate-950 font-semibold text-sm shadow-[0_4px_20px_rgba(245,158,11,0.25)] hover:shadow-[0_6px_25px_rgba(245,158,11,0.35)] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.99] mt-2"
           >
-            {isLoading ? 'CREATING YOUR PORTFOLIO...' : 'CREATE ACCOUNT & PORTFOLIO ↗'}
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin text-slate-950" />
+                <span>Đang khởi tạo tài khoản...</span>
+              </>
+            ) : (
+              <>
+                <span>Tạo tài khoản & Mở Workspace</span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </>
+            )}
           </button>
         </form>
 
-        <div className="border-b border-[#1c274a]" />
-
-        {/* Footer Links */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 font-mono text-xs text-[#7990c6]">
-          <a href="/" className="hover:text-white transition-colors">
-            ← Home
-          </a>
-          <div>
-            Already have an account?{' '}
-            <a
-              href="/login"
-              className="text-[#f8c076] hover:underline font-bold"
-            >
-              [ Sign In ]
-            </a>
-          </div>
+        {/* Link to Login */}
+        <div className="pt-2 text-center text-xs text-slate-400">
+          Đã có tài khoản SoodFolio?{' '}
+          <Link 
+            href="/login" 
+            className="font-semibold text-teal-400 hover:text-teal-300 hover:underline transition-colors ml-1"
+          >
+            Đăng nhập ngay →
+          </Link>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

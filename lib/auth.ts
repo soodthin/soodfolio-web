@@ -7,6 +7,7 @@ export interface AuthUser {
   username: string;
   avatarUrl?: string | null;
   role: string;
+  authProvider?: string;
 }
 
 export interface AuthResponse {
@@ -32,11 +33,15 @@ const USER_COOKIE = 'soodfolio_user';
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
 
-export function setAuthSession(data: AuthResponse) {
-  // Store access token in cookie with 7 days expiration (or matched to refreshToken)
-  Cookies.set(TOKEN_COOKIE, data.accessToken, { expires: 7, path: '/' });
-  Cookies.set(REFRESH_TOKEN_COOKIE, data.refreshToken, { expires: 7, path: '/' });
-  Cookies.set(USER_COOKIE, JSON.stringify(data.user), { expires: 7, path: '/' });
+export function setAuthSession(data: AuthResponse, rememberMe: boolean = true) {
+  const cookieOptions: Cookies.CookieAttributes = { path: '/' };
+  if (rememberMe) {
+    cookieOptions.expires = 7; // 7 days persistence
+  }
+
+  Cookies.set(TOKEN_COOKIE, data.accessToken, cookieOptions);
+  Cookies.set(REFRESH_TOKEN_COOKIE, data.refreshToken, cookieOptions);
+  Cookies.set(USER_COOKIE, JSON.stringify(data.user), cookieOptions);
 }
 
 export function getAuthToken(): string | undefined {
