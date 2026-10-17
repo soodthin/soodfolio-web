@@ -89,3 +89,24 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #353e56;
 }
+
+/* Vertical Portfolio Marquee animations for Auth background */
+@keyframes marquee-down {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0%); }
+}
+
+@keyframes marquee-up {
+  0% { transform: translateY(0%); }
+  100% { transform: translateY(-50%); }
+}
+
+.animate-marquee-down {
+  animation: marquee-down 40s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-up {
+  animation: marquee-up 40s linear infinite;
+  will-change: transform;
+}

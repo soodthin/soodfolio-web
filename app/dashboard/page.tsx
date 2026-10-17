@@ -74,14 +74,18 @@ export default function DashboardPage() {
   const [activeSlide, setActiveSlide] = useState<'cover' | 'projects' | 'experience' | 'skills' | 'settings'>('cover');
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Theme switcher state (Dark/Light)
+  // Theme switcher state (Dark/Light) & Language state
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [lang, setLang] = useState<'vi' | 'en'>('vi');
 
   useEffect(() => {
     const saved = localStorage.getItem('soodfolio-theme') as 'dark' | 'light' | null;
     const isDark = saved ? saved === 'dark' : document.documentElement.classList.contains('dark');
     setTheme(isDark ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark', isDark);
+
+    const savedLang = localStorage.getItem('soodfolio-lang') as 'vi' | 'en' | null;
+    if (savedLang) setLang(savedLang);
   }, []);
 
   const toggleTheme = () => {
@@ -89,6 +93,12 @@ export default function DashboardPage() {
     setTheme(next);
     localStorage.setItem('soodfolio-theme', next);
     document.documentElement.classList.toggle('dark', next === 'dark');
+  };
+
+  const toggleLang = () => {
+    const next = lang === 'vi' ? 'en' : 'vi';
+    setLang(next);
+    localStorage.setItem('soodfolio-lang', next);
   };
 
   // Modals state
@@ -556,6 +566,17 @@ export default function DashboardPage() {
                 }`}
               />
               <span>{portfolio?.isPublished ? 'Đang Live' : 'Bản nháp'}</span>
+            </button>
+
+            {/* Language Switcher */}
+            <button
+              type="button"
+              onClick={toggleLang}
+              className="h-8 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-xs font-mono font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              title={lang === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
+            >
+              <Globe className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              <span>{lang.toUpperCase()}</span>
             </button>
 
             {/* Dark / Light Theme Toggle */}
