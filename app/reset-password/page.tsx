@@ -116,12 +116,11 @@ function ResetPasswordForm() {
     return (
       <AuthLayout
         title="Đang xác thực liên kết"
-        subtitle="Vui lòng chờ trong giây lát trong khi chúng tôi kiểm tra liên kết của bạn..."
-        badgeText="VERIFYING TOKEN"
+        subtitle="Vui lòng chờ trong giây lát trong khi hệ thống kiểm tra liên kết của bạn..."
       >
-        <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400 font-mono text-xs">
-          <Loader2 className="h-6 w-6 animate-spin text-teal-400" />
-          <span>Đang kiểm tra tính hợp lệ của token...</span>
+        <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-500 dark:text-slate-400 font-mono text-xs">
+          <Loader2 className="h-6 w-6 animate-spin text-teal-600 dark:text-teal-400" />
+          <span>Đang kiểm tra tính hợp lệ của liên kết...</span>
         </div>
       </AuthLayout>
     );
@@ -132,16 +131,15 @@ function ResetPasswordForm() {
       <AuthLayout
         title="Liên kết không hợp lệ"
         subtitle="Liên kết khôi phục mật khẩu đã hết hạn (quá 15 phút) hoặc đã được sử dụng trước đó."
-        badgeText="TOKEN EXPIRED"
       >
         <div className="space-y-6">
-          <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm space-y-2">
+          <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs sm:text-sm space-y-2">
             <div className="flex items-center gap-2 font-semibold">
-              <ShieldAlert className="h-5 w-5 text-rose-400 flex-shrink-0" />
+              <ShieldAlert className="h-5 w-5 text-rose-500 dark:text-rose-400 flex-shrink-0" />
               <span>Không thể sử dụng liên kết này</span>
             </div>
-            <p className="leading-relaxed text-slate-400 text-xs">
-              Vì lý do an toàn, các liên kết khôi phục mật khẩu của SoodFolio sẽ tự động hủy sau 15 phút. Vui lòng gửi lại yêu cầu để nhận liên kết mới.
+            <p className="leading-relaxed text-slate-600 dark:text-slate-400 text-xs">
+              Vì lý do an toàn, các liên kết khôi phục mật khẩu sẽ tự động hết hạn sau 15 phút. Vui lòng gửi lại yêu cầu để nhận liên kết mới.
             </p>
           </div>
 
@@ -153,8 +151,8 @@ function ResetPasswordForm() {
             <ArrowRight className="h-4 w-4" />
           </Link>
 
-          <div className="text-center text-xs text-slate-400">
-            <Link href="/login" className="hover:text-teal-400 transition-colors">
+          <div className="text-center text-xs text-slate-500 dark:text-slate-400">
+            <Link href="/login" className="hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
               Quay lại trang Đăng nhập →
             </Link>
           </div>
@@ -167,7 +165,6 @@ function ResetPasswordForm() {
     <AuthLayout
       title="Đặt lại mật khẩu mới"
       subtitle={email ? `Khởi tạo mật khẩu mới cho tài khoản ${email}.` : 'Nhập mật khẩu mới an toàn cho tài khoản của bạn.'}
-      badgeText="RESET CREDENTIALS"
     >
       <div className="space-y-5">
         {isSuccess ? (

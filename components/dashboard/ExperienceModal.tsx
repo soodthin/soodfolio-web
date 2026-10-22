@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, Briefcase, AlertCircle } from 'lucide-react';
@@ -218,27 +218,27 @@ export function ExperienceModal({ isOpen, onClose, experience, onSaved }: Experi
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-slate-300 font-semibold">ROLE SUMMARY</label>
+            <label className="text-slate-300 font-semibold">MÔ TẢ VAI TRÒ</label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Engineered internal web application processing bank statement reconciliation..."
+              placeholder="Tóm tắt vai trò, trách nhiệm và phạm vi công việc của bạn..."
               className="w-full p-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs font-sans leading-relaxed resize-none"
             />
           </div>
 
           <div className="space-y-1.5">
             <label className="text-slate-300 font-semibold flex items-center justify-between">
-              <span>KEY ACHIEVEMENTS & CONTRIBUTIONS</span>
-              <span className="text-[10px] text-slate-400">One item per line</span>
+              <span>THÀNH TỰU & KẾT QUẢ NỔI BẬT</span>
+              <span className="text-[10px] text-slate-400">Mỗi dòng một ý</span>
             </label>
             <textarea
               rows={4}
               value={highlightsInput}
               onChange={(e) => setHighlightsInput(e.target.value)}
-              placeholder="Bank Statement Parsing: Built REST APIs with FastAPI across 10+ banks with OCR fallback`nCash Report Automation: Cut reconciliation cycle from 1 day to 2 hours (75% reduction)`nSecurity: Implemented Google OAuth2 SSO with JWT & Redis session store"
-              className="w-full p-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs font-mono leading-relaxed"
+              placeholder="Ví dụ:&#10;- Dẫn dắt ra mắt dự án mới thu hút hơn 100.000 người dùng trong 3 tháng đầu&#10;- Cải tiến quy trình làm việc giúp tiết kiệm 40% thời gian xử lý của đội ngũ&#10;- Nâng cao chỉ số hài lòng của khách hàng và đối tác lên 96%"
+              className="w-full p-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs font-sans leading-relaxed"
             />
           </div>
 

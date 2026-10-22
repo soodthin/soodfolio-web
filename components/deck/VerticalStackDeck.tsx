@@ -792,20 +792,20 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                 <div className="p-4 rounded-xl bg-[#ffffff] dark:bg-white/[0.02] border border-[#e2e8f0]/80 dark:border-white/10 space-y-1.5">
                   <div className="flex items-center gap-2 font-bold text-slate-950 dark:text-white font-mono text-xs">
                     <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0" />
-                    <span>Enterprise SSO & Session Tracking</span>
+                    <span>Enterprise Security & Access Control</span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-                    Implemented domain-locked Google OAuth2 SSO, JWT access tokens with device session tracking via Redis, and granular RBAC.
+                    Implemented secure single sign-on (SSO), encrypted session management, and granular permission controls for internal finance teams.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-[#ffffff] dark:bg-white/[0.02] border border-[#e2e8f0]/80 dark:border-white/10 space-y-1.5">
                   <div className="flex items-center gap-2 font-bold text-slate-950 dark:text-white font-mono text-xs">
                     <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0" />
-                    <span>SSE Real-time Tracker & AI Telemetry</span>
+                    <span>Real-time Status Tracking & Monitoring</span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-                    Built React UI with SSE progress tracking for long-running batch jobs, centralized logging, and internal AI cost usage tracking.
+                    Built responsive user interface with live progress tracking for long-running workflows, automated notifications, and operational metrics.
                   </p>
                 </div>
               </div>
@@ -814,7 +814,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
             {/* Tech Stack Pills */}
             <div className="pt-2 border-t border-[#e2e8f0] dark:border-white/10 flex flex-wrap items-center gap-1.5 font-mono text-xs">
               <span className="text-[10px] text-slate-400 uppercase tracking-wider mr-1">TECH STACK:</span>
-              {['FastAPI', 'Python', 'React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'Redis', 'Google OAuth2', 'SSE', 'Gemini AI'].map((t) => (
+              {['FastAPI', 'Python', 'React', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'Redis', 'Cloud Auth', 'Realtime SSE', 'AI Engine'].map((t) => (
                 <span key={t} className="px-2.5 py-0.5 rounded-md bg-[#f1f5f9] dark:bg-white/5 border border-[#e2e8f0] dark:border-white/10 text-slate-800 dark:text-slate-200 font-medium">
                   {t}
                 </span>

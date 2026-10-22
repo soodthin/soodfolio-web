@@ -73,8 +73,8 @@ function CallbackHandler() {
           router.replace('/dashboard');
         }, 800);
       } catch (err: any) {
-        console.warn('OAuth exchange warning:', err);
-        setErrorMessage(err.message || 'Đã có lỗi xảy ra trong quá trình trao đổi token.');
+        console.warn('Authentication warning:', err);
+        setErrorMessage(err.message || 'Đã có lỗi xảy ra trong quá trình kết nối tài khoản.');
       } finally {
         setIsLoading(false);
       }
@@ -89,44 +89,43 @@ function CallbackHandler() {
     <AuthLayout
       title={`Đang đăng nhập với ${providerName}`}
       subtitle="Đang liên kết tài khoản và tạo phiên làm việc bảo mật..."
-      badgeText="OAUTH 2.0 VERIFY"
     >
       <div className="space-y-6">
         {isLoading && (
-          <div className="py-12 flex flex-col items-center justify-center gap-4 text-slate-300 font-mono text-xs animate-in fade-in">
-            <Loader2 className="h-8 w-8 animate-spin text-teal-400" />
+          <div className="py-12 flex flex-col items-center justify-center gap-4 text-slate-700 dark:text-slate-300 font-mono text-xs animate-in fade-in">
+            <Loader2 className="h-8 w-8 animate-spin text-teal-600 dark:text-teal-400" />
             <div className="text-center space-y-1">
-              <p className="font-semibold text-white text-sm">Đang trao đổi mã xác thực...</p>
-              <p className="text-slate-400 text-xs">Vui lòng không tắt hoặc tải lại trang.</p>
+              <p className="font-semibold text-slate-900 dark:text-white text-sm">Đang hoàn tất kết nối tài khoản...</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs">Vui lòng không tắt hoặc tải lại trang.</p>
             </div>
           </div>
         )}
 
         {isSuccess && (
-          <div className="p-6 rounded-2xl bg-[#131520] border border-emerald-500/30 text-center space-y-3 animate-in fade-in duration-300">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto" />
-            <h3 className="text-base font-bold text-white">
+          <div className="p-6 rounded-2xl bg-white/70 dark:bg-[#131520] border border-emerald-500/30 text-center space-y-3 animate-in fade-in duration-300">
+            <CheckCircle2 className="h-10 w-10 text-emerald-500 dark:text-emerald-400 mx-auto" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Xác thực {providerName} thành công!
             </h3>
-            <p className="text-xs text-slate-400 font-mono">
-              Đang chuyển hướng bạn vào Workspace...
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-mono">
+              Đang chuyển hướng bạn vào bảng điều khiển...
             </p>
           </div>
         )}
 
         {errorMessage && (
           <div className="space-y-5 animate-in fade-in duration-200">
-            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-rose-400 mt-0.5 flex-shrink-0" />
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs sm:text-sm flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-rose-500 dark:text-rose-400 mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <p className="font-semibold text-rose-200">Đăng nhập không thành công</p>
+                <p className="font-semibold text-rose-800 dark:text-rose-200">Đăng nhập không thành công</p>
                 <p className="leading-relaxed text-xs">{errorMessage}</p>
               </div>
             </div>
 
             <Link
               href="/login"
-              className="w-full h-11 rounded-xl bg-[#141622] hover:bg-[#1a1d2e] border border-white/10 hover:border-teal-500/30 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200"
+              className="w-full h-11 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#141622] dark:hover:bg-[#1a1d2e] border border-slate-200 dark:border-white/10 hover:border-teal-500/30 text-slate-900 dark:text-white font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Quay lại trang Đăng nhập</span>
@@ -141,8 +140,8 @@ function CallbackHandler() {
 export default function OAuthCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#090a0f] text-slate-400 font-mono text-sm">
-        Đang khởi tạo phiên OAuth...
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] dark:bg-[#090a0f] text-slate-600 dark:text-slate-400 font-mono text-sm">
+        Đang chuẩn bị phiên làm việc...
       </div>
     }>
       <CallbackHandler />

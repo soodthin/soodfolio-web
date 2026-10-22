@@ -1,19 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://soodfolio.com"),
@@ -30,7 +17,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark min-h-full ${geistSans.variable} ${geistMono.variable}`}
+      className="dark min-h-full"
     >
       <body className="min-h-[100dvh] antialiased selection:bg-teal-500/20 selection:text-teal-400 font-sans">
         <Providers>{children}</Providers>

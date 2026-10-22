@@ -130,7 +130,7 @@ export default function RegisterPage() {
       router.push('/dashboard');
     } catch (err) {
       console.error('Registration failed:', err);
-      setErrorMessage('Không thể kết nối đến máy chủ API. Vui lòng kiểm tra lại backend.');
+      setErrorMessage('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng và thử lại sau.');
       setIsLoading(false);
     }
   };

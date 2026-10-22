@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -42,7 +42,8 @@ import {
   Monitor,
   EyeOff,
   ArrowRight,
-  Code2
+  Code2,
+  MoreVertical
 } from 'lucide-react';
 
 const SKILL_CATEGORIES = [
@@ -119,6 +120,29 @@ export default function DashboardPage() {
   // Deleting item states
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
   const [deletingExperienceId, setDeletingExperienceId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside or escape key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [menuOpen]);
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ type, text });
@@ -485,15 +509,15 @@ export default function DashboardPage() {
       )}
 
       {/* Top Deck Studio Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#080d12]/80 backdrop-blur-md transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-[#080d12]/90 backdrop-blur-md transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 sm:gap-4">
           {/* Left Brand & Deck Title */}
-          <div className="flex items-center gap-3 min-w-0">
-            <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
+            <Link href="/" className="flex items-center gap-2 group flex-shrink-0" aria-label="Trang chủ SoodFolio">
               <div className="h-8 w-8 rounded-lg bg-teal-500/10 dark:bg-teal-400/10 border border-teal-500/30 dark:border-teal-400/30 flex items-center justify-center text-teal-600 dark:text-teal-400 transition-transform group-hover:scale-105">
                 <Layers className="h-4 w-4" />
               </div>
-              <span className="font-extrabold tracking-tight text-sm sm:text-base hidden sm:inline text-slate-900 dark:text-white">
+              <span className="font-extrabold tracking-tight text-sm sm:text-base text-slate-900 dark:text-white flex-shrink-0">
                 SOODFOLIO
               </span>
             </Link>
@@ -501,16 +525,32 @@ export default function DashboardPage() {
             <span className="hidden sm:inline text-slate-300 dark:text-white/20">/</span>
 
             {/* Deck Title & Live Link Pill */}
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 truncate max-w-[120px] sm:max-w-[200px]">
+            <div className="hidden sm:flex items-center gap-2 min-w-0">
+              <span className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 truncate max-w-[110px] md:max-w-[160px] lg:max-w-[200px]">
                 {portfolio?.title || `${fullName}'s Deck`}
               </span>
 
-              {/* 1-Click Copy Public Link */}
+              {/* Tablet (md to lg): Compact Copy Button to prevent header collision */}
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 transition-all cursor-pointer"
+                aria-label={`Sao chép link: soodfolio.com/${username}`}
+                className="hidden md:flex lg:hidden p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/10 transition-all cursor-pointer flex-shrink-0"
+                title={`Sao chép link: soodfolio.com/${username}`}
+              >
+                {copiedLink ? (
+                  <Check className="h-3.5 w-3.5 text-teal-500" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+              </button>
+
+              {/* Desktop (lg+): Full URL Pill */}
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                aria-label={`Sao chép link: soodfolio.com/${username}`}
+                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 transition-all cursor-pointer flex-shrink-0"
                 title="Sao chép link công khai"
               >
                 <span>soodfolio.com/{username}</span>
@@ -523,37 +563,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right Controls: View Live, Publish Toggle, Theme, Logout */}
+          {/* Right Controls - Unified, Minimalist & Modern on All Screen Sizes */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            {/* View Live Presentation */}
-            <Link
-              href={liveUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 transition-colors"
-            >
-              <span>Xem Live</span>
-              <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
-            </Link>
-
-            {/* Export PDF Dossier */}
-            <Link
-              href={/export/ + username}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-white bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-all cursor-pointer"
-              title="Xuất hồ sơ Dossier / In PDF chuẩn A4"
-            >
-              <Printer className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
-              <span>Xuất PDF</span>
-            </Link>
-
-            {/* Publish Status Toggle */}
+            {/* Publish Status Toggle (Live vs Draft) */}
             <button
               type="button"
               onClick={handleToggleStatus}
               disabled={isUpdatingStatus}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer ${
+              aria-label={portfolio?.isPublished ? 'Chuyển về trạng thái bản nháp' : 'Công khai trang portfolio'}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer ${
                 portfolio?.isPublished
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
                   : 'bg-slate-100 dark:bg-white/[0.04] border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/[0.08]'
@@ -561,47 +579,144 @@ export default function DashboardPage() {
               title={portfolio?.isPublished ? 'Bấm để chuyển về bản nháp riêng tư' : 'Bấm để công khai slide deck'}
             >
               <span
-                className={`h-2 w-2 rounded-full ${
+                className={`h-2 w-2 rounded-full flex-shrink-0 ${
                   portfolio?.isPublished ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-500'
                 }`}
               />
-              <span>{portfolio?.isPublished ? 'Đang Live' : 'Bản nháp'}</span>
+              <span className="hidden xs:inline">{portfolio?.isPublished ? 'Đang Live' : 'Bản nháp'}</span>
             </button>
 
-            {/* Language Switcher */}
-            <button
-              type="button"
-              onClick={toggleLang}
-              className="h-8 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-xs font-mono font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
-              title={lang === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
+            {/* View Live Presentation CTA Button */}
+            <Link
+              href={liveUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Xem trang trình chiếu live công khai"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 transition-colors"
             >
-              <Globe className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-              <span>{lang.toUpperCase()}</span>
-            </button>
+              <span className="hidden sm:inline">Xem Live</span>
+              <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+            </Link>
 
-            {/* Dark / Light Theme Toggle */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
-              title={theme === 'dark' ? 'Chuyển sang Giao diện Sáng' : 'Chuyển sang Giao diện Tối'}
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-4 w-4 text-[#2dd4bf]" />
-              ) : (
-                <Moon className="h-4 w-4 text-slate-700" />
+            {/* Unified Profile & Settings Dropdown (Desktop, Tablet, Mobile) */}
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-label="Mở menu hồ sơ và cài đặt"
+                className="flex items-center gap-1.5 p-1 sm:px-2 sm:py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 transition-all cursor-pointer group"
+              >
+                <div className="h-7 w-7 rounded-lg bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold text-xs flex items-center justify-center overflow-hidden border border-teal-500/30 flex-shrink-0">
+                  {portfolio?.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={portfolio.avatarUrl} alt={fullName} className="h-full w-full object-cover" />
+                  ) : (
+                    <span>{fullName.slice(0, 2).toUpperCase()}</span>
+                  )}
+                </div>
+                <ChevronDown className={`h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Flyout Dropdown Popover */}
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#0c141d] border border-slate-200 dark:border-white/10 shadow-2xl p-2.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-2">
+                  {/* User Profile Card */}
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.04] space-y-1">
+                    <div className="font-bold text-xs text-slate-900 dark:text-white truncate">{fullName}</div>
+                    <div className="text-[11px] font-mono text-teal-600 dark:text-teal-400 truncate">@{username}</div>
+                    {user?.email && (
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{user.email}</div>
+                    )}
+                  </div>
+
+                  {/* Quick Action Links */}
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleCopyLink();
+                        setMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Copy className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                        <span>Sao chép liên kết</span>
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">soodfolio.com/{username}</span>
+                    </button>
+
+                    <Link
+                      href={`/export/${username}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => setMenuOpen(false)}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Printer className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <span>Xuất hồ sơ PDF (A4)</span>
+                      </span>
+                      <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400">Dossier</span>
+                    </Link>
+                  </div>
+
+                  <div className="h-px bg-slate-100 dark:bg-white/[0.06] my-1" />
+
+                  {/* Preferences: Theme & Language */}
+                  <div className="space-y-1">
+                    {/* Theme Switch */}
+                    <button
+                      type="button"
+                      onClick={toggleTheme}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        {theme === 'dark' ? (
+                          <Sun className="h-3.5 w-3.5 text-[#2dd4bf]" />
+                        ) : (
+                          <Moon className="h-3.5 w-3.5 text-slate-600" />
+                        )}
+                        <span>Giao diện</span>
+                      </span>
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                        {theme === 'dark' ? 'Tối (Dark)' : 'Sáng (Light)'}
+                      </span>
+                    </button>
+
+                    {/* Language Switch */}
+                    <button
+                      type="button"
+                      onClick={toggleLang}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Globe className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                        <span>Ngôn ngữ</span>
+                      </span>
+                      <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400">
+                        {lang === 'vi' ? 'Tiếng Việt' : 'English'}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="h-px bg-slate-100 dark:bg-white/[0.06] my-1" />
+
+                  {/* Logout */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span>Đăng xuất</span>
+                  </button>
+                </div>
               )}
-            </button>
-
-            {/* User Logout Button */}
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="p-2 rounded-lg bg-slate-100 hover:bg-rose-50 dark:bg-white/[0.04] dark:hover:bg-rose-500/10 border border-slate-200 dark:border-white/10 text-slate-600 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
-              title="Đăng xuất khỏi Studio"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            </div>
           </div>
         </div>
       </header>
@@ -780,30 +895,33 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => setProfileModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                  aria-label="Chỉnh sửa thông tin bìa"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm whitespace-nowrap"
                 >
                   <Pencil className="h-3.5 w-3.5" />
-                  <span>Sửa thông tin bìa</span>
+                  <span className="hidden sm:inline">Chỉnh sửa bìa</span>
                 </button>
               )}
               {activeSlide === 'projects' && (
                 <button
                   type="button"
                   onClick={handleOpenAddProject}
-                  className="px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                  aria-label="Thêm dự án mới"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm whitespace-nowrap"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Thêm dự án mới</span>
+                  <span className="hidden sm:inline">Thêm dự án mới</span>
                 </button>
               )}
               {activeSlide === 'experience' && (
                 <button
                   type="button"
                   onClick={handleOpenAddExperience}
-                  className="px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                  aria-label="Thêm mốc sự nghiệp"
+                  className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm whitespace-nowrap"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Thêm mốc sự nghiệp</span>
+                  <span className="hidden sm:inline">Thêm mốc sự nghiệp</span>
                 </button>
               )}
             </div>
@@ -812,10 +930,10 @@ export default function DashboardPage() {
           {/* 16:9 Presentation Canvas Container */}
           <div className="w-full rounded-2xl bg-white dark:bg-[#0c141d] border border-slate-200/90 dark:border-white/[0.08] shadow-sm overflow-hidden p-6 sm:p-10 transition-colors min-h-[380px] flex flex-col justify-center relative">
             
-            {/* Visual subtle corner badge */}
-            <div className="absolute top-4 right-4 flex items-center gap-2">
-              <span className="text-[10px] font-mono tracking-wider text-slate-400 bg-slate-100 dark:bg-white/[0.04] px-2 py-0.5 rounded border border-slate-200/60 dark:border-white/[0.06]">
-                WYSIWYG 16:9 LIVE CANVAS
+            {/* Visual subtle corner badge (hidden on mobile to prevent overlap with avatar) */}
+            <div className="absolute top-4 right-4 hidden sm:flex items-center gap-2">
+              <span className="text-[10px] font-mono tracking-wider text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-white/[0.04] px-2.5 py-0.5 rounded border border-slate-200 dark:border-white/[0.06]">
+                Bản xem trước 16:9
               </span>
             </div>
 
@@ -839,6 +957,7 @@ export default function DashboardPage() {
                   <button
                     type="button"
                     onClick={() => setProfileModalOpen(true)}
+                    aria-label="Đổi ảnh đại diện"
                     className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-medium transition-opacity cursor-pointer backdrop-blur-[2px]"
                   >
                     Đổi ảnh
@@ -924,7 +1043,7 @@ export default function DashboardPage() {
                         className="p-4 rounded-xl bg-slate-50/70 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.06] hover:border-teal-500/50 transition-all flex flex-col justify-between"
                       >
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                          <div className="flex items-center justify-between text-[11px] font-mono text-slate-600 dark:text-slate-400">
                             <span>{proj.role || 'Case Study'}</span>
                             <span>{proj.periodText || ''}</span>
                           </div>
@@ -1011,7 +1130,7 @@ export default function DashboardPage() {
                             {exp.description || 'Chịu trách nhiệm thiết kế hệ thống và định hướng kỹ thuật cho toàn bộ nhóm.'}
                           </p>
                         </div>
-                        <div className="text-right text-[11px] font-mono text-slate-400 flex-shrink-0">
+                        <div className="text-right text-[11px] font-mono text-slate-600 dark:text-slate-400 flex-shrink-0">
                           {exp.periodText || 'Hiện tại'}
                         </div>
                       </div>
@@ -1188,10 +1307,11 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => setProfileModalOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                  aria-label="Chỉnh sửa thông tin hồ sơ chi tiết"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-white/10 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                 >
-                  <Pencil className="h-3.5 w-3.5" />
-                  <span>Mở bảng chỉnh sửa hồ sơ</span>
+                  <Pencil className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                  <span>Chỉnh sửa hồ sơ</span>
                 </button>
               </div>
 
@@ -1210,7 +1330,7 @@ export default function DashboardPage() {
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06]">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Chức danh / Tiêu đề</span>
                   <div className="text-sm font-semibold text-slate-900 dark:text-white mt-1 truncate">
-                    {portfolio?.title || 'Chưa cập nhật'}
+                    {portfolio?.tagline || portfolio?.title || 'Chưa cập nhật'}
                   </div>
                 </div>
 
@@ -1265,6 +1385,7 @@ export default function DashboardPage() {
                             type="button"
                             disabled={idx === 0}
                             onClick={() => handleMoveProject(idx, 'up')}
+                            aria-label={`Di chuyển dự án ${proj.title} lên trên`}
                             className="p-1 rounded bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             title="Di chuyển lên trên"
                           >
@@ -1274,6 +1395,7 @@ export default function DashboardPage() {
                             type="button"
                             disabled={idx === portfolio.projects.length - 1}
                             onClick={() => handleMoveProject(idx, 'down')}
+                            aria-label={`Di chuyển dự án ${proj.title} xuống dưới`}
                             className="p-1 rounded bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             title="Di chuyển xuống dưới"
                           >
@@ -1293,7 +1415,7 @@ export default function DashboardPage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">
                             {proj.description || 'Chưa có mô tả chi tiết'}
                           </p>
                         </div>
@@ -1304,6 +1426,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           onClick={() => handleOpenEditProject(proj)}
+                          aria-label={`Chỉnh sửa dự án ${proj.title}`}
                           className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex items-center gap-1.5 cursor-pointer"
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -1313,6 +1436,7 @@ export default function DashboardPage() {
                           type="button"
                           disabled={deletingProjectId === proj.id}
                           onClick={() => handleDeleteProject(proj.id)}
+                          aria-label={`Xoá dự án ${proj.title}`}
                           className="p-1.5 rounded-lg bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer disabled:opacity-50"
                           title="Xoá dự án"
                         >
@@ -1370,6 +1494,7 @@ export default function DashboardPage() {
                             type="button"
                             disabled={idx === 0}
                             onClick={() => handleMoveExperience(idx, 'up')}
+                            aria-label={`Di chuyển mốc kinh nghiệm ${exp.roleTitle} lên trên`}
                             className="p-1 rounded bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             title="Di chuyển lên trên"
                           >
@@ -1379,6 +1504,7 @@ export default function DashboardPage() {
                             type="button"
                             disabled={idx === portfolio.experiences.length - 1}
                             onClick={() => handleMoveExperience(idx, 'down')}
+                            aria-label={`Di chuyển mốc kinh nghiệm ${exp.roleTitle} xuống dưới`}
                             className="p-1 rounded bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                             title="Di chuyển xuống dưới"
                           >
@@ -1395,7 +1521,7 @@ export default function DashboardPage() {
                               @ {exp.companyName}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">
                             {exp.periodText || 'Hiện tại'} {exp.location ? `· ${exp.location}` : ''}
                           </p>
                         </div>
@@ -1406,6 +1532,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           onClick={() => handleOpenEditExperience(exp)}
+                          aria-label={`Chỉnh sửa kinh nghiệm ${exp.roleTitle} tại ${exp.companyName}`}
                           className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex items-center gap-1.5 cursor-pointer"
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -1415,6 +1542,7 @@ export default function DashboardPage() {
                           type="button"
                           disabled={deletingExperienceId === exp.id}
                           onClick={() => handleDeleteExperience(exp.id)}
+                          aria-label={`Xoá kinh nghiệm ${exp.roleTitle} tại ${exp.companyName}`}
                           className="p-1.5 rounded-lg bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer disabled:opacity-50"
                           title="Xoá kinh nghiệm"
                         >
@@ -1514,8 +1642,9 @@ export default function DashboardPage() {
                                 type="button"
                                 disabled={deletingSkillId === skill.id}
                                 onClick={() => handleDeleteSkill(skill.id)}
+                                aria-label={`Xoá kỹ năng ${skill.name}`}
                                 className="p-0.5 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-50"
-                                title="Xoá kỹ năng"
+                                title={`Xoá kỹ năng ${skill.name}`}
                               >
                                 {deletingSkillId === skill.id ? (
                                   <Loader2 className="h-2.5 w-2.5 animate-spin" />
@@ -1573,19 +1702,21 @@ export default function DashboardPage() {
                     href={liveUrl}
                     target="_blank"
                     rel="noreferrer"
+                    aria-label="Mở trang trình chiếu live trong tab mới"
                     className="p-2 rounded-xl bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
                     title="Mở tab mới"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Link>
                   <Link
-                    href={/export/ + username}
+                    href={`/export/${username}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                    aria-label="Xuất hồ sơ Dossier hoặc In PDF chuẩn A4"
+                    className="px-3.5 py-2 rounded-xl bg-amber-100/70 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 border border-amber-300/80 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                     title="Xuất hồ sơ Dossier / In PDF chuẩn A4"
                   >
-                    <Printer className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
+                    <Printer className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
                     <span>Xuất PDF</span>
                   </Link>
                 </div>

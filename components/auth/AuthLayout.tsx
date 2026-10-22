@@ -8,84 +8,85 @@ interface AuthLayoutProps {
   children: React.ReactNode;
   title: string;
   subtitle: string;
+  badgeText?: string;
   cardWidth?: string;
 }
 
 const LEFT_PORTFOLIO_SLIDES = [
   {
     slideNumber: 'SLIDE 01',
-    category: 'BRAND & DESIGN',
+    category: 'PRODUCT & UI/UX',
     author: 'Elena Vance',
-    role: 'Principal Product Designer',
-    tagline: 'Crafting fluid spatial interfaces & design systems.',
-    tags: ['Figma', 'Design Systems', 'Design Tokens'],
-    metric: '+38% Activation',
+    role: 'Lead Product Designer',
+    tagline: 'Designing intuitive web interfaces and modern creative design systems.',
+    tags: ['Figma', 'UI/UX Design', 'Design Systems'],
+    metric: '+38% Tương tác',
   },
   {
     slideNumber: 'SLIDE 02',
     category: 'CASE STUDY',
-    author: 'Lumina Spatial OS',
-    role: 'Interactive WebGL Canvas',
-    tagline: 'Multi-threaded gesture canvas with 120fps motion fidelity.',
-    tags: ['Next.js', 'Three.js', 'Tailwind'],
-    metric: '120fps Fidelity',
+    author: 'Lumina Creative Studio',
+    role: 'Interactive Brand Showcase',
+    tagline: 'High-impact visual storytelling and fluid animations for digital products.',
+    tags: ['Next.js', 'Animation', 'Branding'],
+    metric: '120fps Mượt mà',
   },
   {
     slideNumber: 'SLIDE 03',
     category: 'CAREER TIMELINE',
-    author: 'Linear Labs',
-    role: 'Head of Product Design (2022 — Present)',
-    tagline: 'Scaled core design team from 3 to 24 contributors.',
-    tags: ['Leadership', 'Design Operations'],
-    metric: 'Team Scale 8x',
+    author: 'Studio Labs',
+    role: 'Head of Creative Design (2022 — Hiện tại)',
+    tagline: 'Dẫn dắt và mở rộng đội ngũ thiết kế sáng tạo từ 3 lên 24 thành viên.',
+    tags: ['Leadership', 'Creative Direction'],
+    metric: 'Đội ngũ x8',
   },
   {
     slideNumber: 'SLIDE 04',
-    category: 'CORE CAPABILITIES',
-    author: 'Competencies',
-    role: 'Design Architecture & Motion',
-    tagline: 'Design System Engineering, Micro-interactions, Accessibility.',
-    tags: ['Accessibility', 'Motion', 'WCAG AAA'],
-    metric: 'A11y Verified',
+    category: 'NĂNG LỰC CỐT LÕI',
+    author: 'Portfolio Chuyên Nghiệp',
+    role: 'Thiết kế Trải nghiệm Người dùng',
+    tagline: 'Nghiên cứu người dùng, thiết kế giao diện đa nền tảng và tối ưu tương tác.',
+    tags: ['UI/UX', 'Mobile App', 'Design Strategy'],
+    metric: '100% Hài lòng',
   },
 ];
 
 const RIGHT_PORTFOLIO_SLIDES = [
   {
     slideNumber: 'SLIDE 01',
-    category: 'SYSTEMS & AI',
+    category: 'CREATIVE & TECH',
     author: 'Marcus Chen',
-    role: 'Staff Infrastructure Architect',
-    tagline: 'Distributed high-throughput event streaming & cloud mesh.',
-    tags: ['Go', 'Rust', 'Kubernetes'],
-    metric: '99.999% SLA',
+    role: 'Creative Web Developer',
+    tagline: 'Xây dựng website hiện đại, tốc độ cao và tối ưu trải nghiệm người dùng.',
+    tags: ['React', 'TypeScript', 'Web Design'],
+    metric: '500K+ Người dùng',
   },
   {
     slideNumber: 'SLIDE 02',
     category: 'CASE STUDY',
-    author: 'HyperFlow Broker',
-    role: 'Real-time Telemetry Engine',
-    tagline: 'Processing 4.2M events/sec with sub-millisecond p99 latency.',
-    tags: ['Kafka', 'eBPF', 'ClickHouse'],
-    metric: '4.2M req/sec',
+    author: 'EcoFlow Platform',
+    role: 'Ứng dụng Web Đa Nền tảng',
+    tagline: 'Giải pháp số giúp tự động hóa quy trình quản lý và tiếp cận khách hàng.',
+    tags: ['Web App', 'Automation', 'Cloud'],
+    metric: '+65% Hiệu suất',
   },
   {
     slideNumber: 'SLIDE 03',
     category: 'CAREER TIMELINE',
-    author: 'Stripe Global',
-    role: 'Principal Systems Engineer (2021 — 2024)',
-    tagline: 'Architected multi-region failover mesh across 8 data centers.',
-    tags: ['Distributed Systems', 'Cloud Mesh'],
-    metric: 'Multi-Region Mesh',
+    author: 'Global Tech & Media',
+    role: 'Senior Product Engineer (2021 — 2024)',
+    tagline: 'Phát triển các sản phẩm công nghệ phục vụ hàng triệu người dùng toàn cầu.',
+    tags: ['Web Development', 'Digital Products'],
+    metric: '99.9% Ổn định',
   },
   {
     slideNumber: 'SLIDE 04',
-    category: 'CORE CAPABILITIES',
-    author: 'Competencies',
-    role: 'High Concurrency & Storage',
-    tagline: 'Distributed Consensus, Zero-Trust Security, Chaos Engineering.',
-    tags: ['Consensus', 'PostgreSQL', 'GRPC'],
-    metric: 'Zero Downtime',
+    category: 'NĂNG LỰC CỐT LÕI',
+    author: 'Kỹ năng Chuyên môn',
+    role: 'Phát triển Sản phẩm & Công nghệ',
+    tagline: 'Tối ưu hóa tốc độ tải trang, bảo mật dữ liệu và kiến trúc ứng dụng bền vững.',
+    tags: ['Clean Code', 'Performance', 'Security'],
+    metric: 'Đạt chuẩn A11y',
   },
 ];
 
@@ -93,6 +94,7 @@ export function AuthLayout({
   children, 
   title, 
   subtitle,
+  badgeText,
   cardWidth = 'max-w-lg sm:max-w-xl'
 }: AuthLayoutProps) {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -267,6 +269,11 @@ export function AuthLayout({
         
         {/* Title & Subtitle OUTSIDE and ABOVE the card */}
         <div className="text-center mb-3 sm:mb-4 space-y-0.5 animate-in fade-in duration-300 flex-shrink-0">
+          {badgeText && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 mb-1">
+              <span>{badgeText}</span>
+            </div>
+          )}
           <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-950 dark:text-white">
             {title}
           </h1>
@@ -281,10 +288,7 @@ export function AuthLayout({
         </div>
       </main>
 
-      {/* Subtle Footer (Compact height) */}
-      <footer className="relative z-20 w-full py-2 text-center text-[10px] sm:text-[11px] font-mono text-slate-400 dark:text-slate-600 flex-shrink-0">
-        SOODFOLIO STUDIO // MODERN SLIDE DECK PLATFORM
-      </footer>
+
     </div>
   );
 }

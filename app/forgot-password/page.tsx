@@ -54,34 +54,29 @@ export default function ForgotPasswordPage() {
     <AuthLayout
       title="Khôi phục mật khẩu"
       subtitle="Nhập địa chỉ email tài khoản của bạn để nhận liên kết đặt lại mật khẩu an toàn."
-      badgeText="SECURITY RECOVERY"
     >
       <div className="space-y-6">
         {isSubmitted ? (
           <div className="space-y-6 animate-in fade-in duration-300">
             {/* Success Card */}
-            <div className="p-6 rounded-2xl bg-[#131520] border border-emerald-500/30 space-y-4">
-              <div className="h-12 w-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="p-6 rounded-2xl bg-white/70 dark:bg-[#131520] border border-emerald-500/30 space-y-4">
+              <div className="h-12 w-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="h-6 w-6" />
               </div>
 
               <div className="space-y-1.5">
-                <h3 className="text-lg font-bold text-white tracking-tight">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                   Yêu cầu đã được ghi nhận!
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  Nếu tài khoản <span className="text-teal-400 font-mono font-medium">{email}</span> tồn tại trong hệ thống, liên kết đặt lại mật khẩu đã được khởi tạo thành công.
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Nếu tài khoản <span className="text-teal-600 dark:text-teal-400 font-mono font-medium">{email}</span> tồn tại trong hệ thống, liên kết đặt lại mật khẩu đã được gửi đến bạn.
                 </p>
               </div>
 
-              {/* Dev Sandbox Tip */}
-              <div className="p-3 rounded-xl bg-[#191d2c] border border-teal-500/20 text-xs text-slate-400 space-y-1">
-                <div className="text-teal-400 font-mono font-semibold flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
-                  <KeyRound className="h-3.5 w-3.5" />
-                  <span>Môi trường Development Test</span>
-                </div>
-                <p className="text-[11px] leading-relaxed">
-                  Link bí mật vừa được ghi vào log console của Spring Boot API. Bạn có thể kiểm tra terminal để lấy link test ngay!
+              {/* User Friendly Help Tip */}
+              <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                <p className="leading-relaxed">
+                  Vui lòng kiểm tra hộp thư đến (hoặc thư mục Thư rác/Spam) của bạn để mở liên kết và tiến hành đổi mật khẩu mới.
                 </p>
               </div>
             </div>

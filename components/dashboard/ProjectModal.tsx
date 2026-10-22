@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, Sparkles, AlertCircle } from 'lucide-react';
@@ -237,15 +237,15 @@ export function ProjectModal({ isOpen, onClose, project, onSaved }: ProjectModal
 
           <div className="space-y-1.5">
             <label className="text-slate-300 font-semibold flex items-center justify-between">
-              <span>KEY HIGHLIGHTS & DELIVERABLES</span>
-              <span className="text-[10px] text-slate-400">One bullet point per line</span>
+              <span>ĐIỂM NỔI BẬT & ĐÓNG GÓP CỐT LÕI</span>
+              <span className="text-[10px] text-slate-400">Mỗi dòng một ý</span>
             </label>
             <textarea
               rows={4}
               value={highlightsInput}
               onChange={(e) => setHighlightsInput(e.target.value)}
-              placeholder="Engineered high-throughput API gateway with 99.99% uptime`nReduced end-to-end reconciliation time from 1 day to 2 hours`nIntegrated Google OAuth2 SSO with RBAC permission boundaries"
-              className="w-full p-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs font-mono leading-relaxed"
+              placeholder="Ví dụ:&#10;- Xây dựng trải nghiệm trực quan giúp tăng 35% mức độ tương tác của người dùng&#10;- Tối ưu hóa hiệu năng và tốc độ phản hồi nhanh hơn 50%&#10;- Đạt giải thưởng Thiết kế & Trải nghiệm xuất sắc nhất năm"
+              className="w-full p-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs font-sans leading-relaxed"
             />
           </div>
 

@@ -89,7 +89,7 @@ function LoginForm() {
       router.push(redirectTarget);
     } catch (err) {
       console.error('Login request failed:', err);
-      setErrorMessage('Không thể kết nối đến máy chủ API. Vui lòng kiểm tra lại backend.');
+      setErrorMessage('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng và thử lại sau.');
       setIsLoading(false);
     }
   };
@@ -234,7 +234,7 @@ function LoginForm() {
                 </>
               ) : (
                 <>
-                  <span>Đăng nhập vào Workspace</span>
+                  <span>Đăng nhập</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
