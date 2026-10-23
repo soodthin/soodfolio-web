@@ -48,7 +48,26 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
     headers,
   };
 
-  const response = await fetch(url, updatedOptions);
+  let response: Response;
+  try {
+    response = await fetch(url, updatedOptions);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    return new Response(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        status: 503,
+        error: 'NETWORK_ERROR',
+        message: `Không thể kết nối đến máy chủ (${errorMsg}). Vui lòng kiểm tra lại dịch vụ Backend.`,
+        path: url,
+      }),
+      {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
 
   // If unauthorized and we have a refresh token, initiate transparent silent refresh
   if (response.status === 401) {

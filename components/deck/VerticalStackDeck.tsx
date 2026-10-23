@@ -1115,7 +1115,8 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                       <span>{t.works.p3LiveBadge}</span>
                     </div>
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      <span>⚡ 100/100 Lighthouse</span>
+                      <Zap className="h-3 w-3" />
+                      <span>100/100 Lighthouse</span>
                     </div>
                   </div>
 

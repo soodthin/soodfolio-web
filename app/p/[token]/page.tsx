@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { VerticalStackDeck } from '@/components/deck/VerticalStackDeck';

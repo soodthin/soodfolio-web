@@ -107,4 +107,17 @@ describe('API Client Transparent Refresh Interceptor (lib/apiClient.ts)', () => 
     expect(clearAuthSpy).toHaveBeenCalled();
     expect(window.location.href).toBe('/login?sessionExpired=true');
   });
+
+  it('should catch network errors (Failed to fetch / Connection refused) and return a synthetic 503 response', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+
+    const res = await fetchWithAuth('/api/v1/portfolios/me');
+
+    expect(res.ok).toBe(false);
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.error).toBe('NETWORK_ERROR');
+    expect(body.message).toContain('Không thể kết nối');
+  });
 });
+
