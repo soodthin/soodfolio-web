@@ -19,6 +19,7 @@ import {
   MousePointerClick,
   Share2,
 } from 'lucide-react';
+import { getThemePreset } from '@/lib/themePresets';
 
 interface PresentationStageProps {
   portfolio: PortfolioData | null;
@@ -29,6 +30,7 @@ interface PresentationStageProps {
   isFullscreen: boolean;
   focusedField?: string | null;
   onFieldClick?: (fieldId: string) => void;
+  variant?: string | null;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -68,6 +70,7 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
   isFullscreen,
   focusedField,
   onFieldClick,
+  variant,
 }) => {
   if (!portfolio) {
     return (
@@ -76,6 +79,11 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
       </div>
     );
   }
+
+  const activePresetKey = variant || portfolio?.themeConfig || 'classic-deck';
+  const activePreset = getThemePreset(activePresetKey);
+  const isSpotlight = activePresetKey === 'spotlight-focus';
+  const isTerminal = activePresetKey === 'terminal-matrix';
 
   const currentSlideMeta = STUDIO_SLIDES.find((s) => s.key === activeSlide) || STUDIO_SLIDES[0];
 
@@ -107,17 +115,15 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
             ? 'bg-[#080d12] text-slate-100'
             : 'bg-slate-100 text-slate-900'
         }`}
-        style={{
-          backgroundImage:
-            stageTheme === 'dark'
-              ? 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)'
-              : 'radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }}
       >
         {/* 16:9 Stage Canvas Frame with Click-to-Edit cues */}
         <div
-          style={getZoomStyle()}
+          data-theme-preset={activePresetKey}
+          style={{
+            ...getZoomStyle(),
+            fontFamily: activePreset.fontVar,
+            ...(stageTheme === 'dark' ? { backgroundColor: activePreset.surfaceHex } : {}),
+          }}
           className={`${getViewportDimensions()} rounded-2xl shadow-2xl transition-all duration-200 border flex flex-col overflow-hidden relative flex-shrink-0 ${
             stageTheme === 'dark'
               ? 'bg-[#0c131a] border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]'
@@ -134,12 +140,12 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
           >
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-              <span className="font-bold text-teal-600 dark:text-teal-400">
-                SLIDE {currentSlideMeta.number} // {currentSlideMeta.title.toUpperCase()}
+              <span className="font-semibold text-teal-600 dark:text-teal-400">
+                Slide {currentSlideMeta.number} • {currentSlideMeta.title}
               </span>
             </div>
 
-            <div className="flex items-center gap-3 text-[10px]">
+            <div className="flex items-center gap-3 text-xs font-sans">
               <span className="hidden sm:inline text-slate-500">
                 Bấm vào văn bản để sửa trực tiếp
               </span>
@@ -152,7 +158,7 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
             {/* SLIDE 01: COVER & HERO */}
             {activeSlide === 'cover' && (
               <div className="flex-1 flex flex-col justify-center space-y-6 max-w-3xl mx-auto w-full animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                <div className={`flex flex-col ${isSpotlight ? 'items-center text-center' : 'sm:flex-row items-start sm:items-center'} gap-5`}>
                   {/* Click-to-Edit Avatar */}
                   <div
                     onClick={() => onFieldClick?.('avatarUrl')}
@@ -171,11 +177,11 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
                     )}
                   </div>
 
-                  <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className={`space-y-1.5 flex-1 min-w-0 ${isSpotlight ? 'text-center' : ''}`}>
                     {/* Click-to-Edit Status Pill */}
                     <div
                       onClick={() => onFieldClick?.('statusText')}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-teal-500/10 text-teal-600 dark:text-teal-300 border border-teal-500/20 font-mono cursor-pointer transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-sans font-medium bg-teal-500/10 text-teal-600 dark:text-teal-300 border border-teal-500/20 cursor-pointer transition-all ${
                         focusedField === 'statusText'
                           ? 'ring-2 ring-teal-400 bg-teal-500/20'
                           : 'hover:border-teal-400'
@@ -218,6 +224,8 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
                 <p
                   onClick={() => onFieldClick?.('bio')}
                   className={`text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans max-w-2xl cursor-pointer rounded-lg transition-all ${
+                    isSpotlight ? 'text-center mx-auto' : ''
+                  } ${
                     focusedField === 'bio'
                       ? 'ring-2 ring-teal-400/50 bg-teal-500/10 p-2 -m-2'
                       : 'hover:bg-teal-500/5 p-1 -m-1'
@@ -239,7 +247,7 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
                           href={url}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-2.5 py-1 rounded-md text-[11px] font-mono bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition-colors group"
+                          className="px-2.5 py-1 rounded-md text-xs font-sans bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition-colors group"
                         >
                           <span className="font-semibold text-teal-600 dark:text-teal-400">
                             {link.platform}
@@ -262,8 +270,8 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
               <div className="flex-1 flex flex-col justify-center space-y-4 max-w-4xl mx-auto w-full animate-in fade-in zoom-in-95 duration-200">
                 <div className="border-b border-slate-200/80 dark:border-white/10 pb-2 flex items-center justify-between">
                   <div>
-                    <span className="font-mono text-[10px] text-teal-600 dark:text-teal-400 uppercase tracking-widest font-bold">
-                      PORTFOLIO // SELECTED WORK
+                    <span className="text-xs font-sans font-semibold text-teal-600 dark:text-teal-400">
+                      Dự án chọn lọc
                     </span>
                     <h2 className="text-xl sm:text-2xl font-bold">Dự án & Kiến trúc Tiêu biểu</h2>
                   </div>
@@ -289,11 +297,11 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
                         title="Bấm để chỉnh sửa dự án này trong Inspector"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-[10px] font-bold text-teal-600 dark:text-teal-400">
+                          <span className="font-mono text-xs font-bold text-teal-600 dark:text-teal-400">
                             PROJ_0{idx + 1}
                           </span>
                           {proj.role && (
-                            <span className="text-[10px] font-mono text-slate-400">
+                            <span className="text-xs font-sans text-slate-400">
                               {proj.role}
                             </span>
                           )}
@@ -315,7 +323,7 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
                             {proj.techStack.slice(0, 4).map((tech, tIdx) => (
                               <span
                                 key={tIdx}
-                                className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300"
+                                className="px-1.5 py-0.5 rounded text-xs font-sans bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300"
                               >
                                 {tech}
                               </span>
@@ -334,8 +342,8 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
               <div className="flex-1 flex flex-col justify-center space-y-4 max-w-3xl mx-auto w-full animate-in fade-in zoom-in-95 duration-200">
                 <div className="border-b border-slate-200/80 dark:border-white/10 pb-2 flex items-center justify-between">
                   <div>
-                    <span className="font-mono text-[10px] text-teal-600 dark:text-teal-400 uppercase tracking-widest font-bold">
-                      CAREER TIMELINE
+                    <span className="text-xs font-sans font-semibold text-teal-600 dark:text-teal-400">
+                      Dòng thời gian sự nghiệp
                     </span>
                     <h2 className="text-xl sm:text-2xl font-bold">Lịch sử & Cột mốc Sự nghiệp</h2>
                   </div>
@@ -378,7 +386,7 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
                         </div>
 
                         {exp.periodText && (
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-500 flex-shrink-0">
+                          <span className="text-xs font-sans px-2 py-0.5 rounded bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-500 flex-shrink-0">
                             {exp.periodText}
                           </span>
                         )}
@@ -394,8 +402,8 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
               <div className="flex-1 flex flex-col justify-center space-y-4 max-w-4xl mx-auto w-full animate-in fade-in zoom-in-95 duration-200">
                 <div className="border-b border-slate-200/80 dark:border-white/10 pb-2 flex items-center justify-between">
                   <div>
-                    <span className="font-mono text-[10px] text-teal-600 dark:text-teal-400 uppercase tracking-widest font-bold">
-                      CAPABILITY MATRIX
+                    <span className="text-xs font-sans font-semibold text-teal-600 dark:text-teal-400">
+                      Ma trận năng lực
                     </span>
                     <h2 className="text-xl sm:text-2xl font-bold">Năng lực Cốt lõi & Công nghệ</h2>
                   </div>
@@ -421,18 +429,26 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
                         <div
                           key={catKey}
                           onClick={() => onFieldClick?.('skills')}
-                          className="p-3 rounded-xl border bg-slate-50/50 dark:bg-white/[0.02] border-slate-200/80 dark:border-white/[0.07] space-y-1.5 cursor-pointer hover:border-teal-500/50 transition-all"
+                          className={`p-3 rounded-xl border space-y-1.5 cursor-pointer transition-all ${
+                            isTerminal
+                              ? 'bg-black/50 border-emerald-500/20 font-mono hover:border-emerald-500/40'
+                              : 'bg-slate-50/50 dark:bg-white/[0.02] border-slate-200/80 dark:border-white/[0.07] hover:border-teal-500/50'
+                          }`}
                         >
-                          <div className="font-mono text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider">
-                            {catLabel}
+                          <div className={`text-xs font-semibold ${isTerminal ? 'font-mono text-emerald-400' : 'font-sans text-teal-600 dark:text-teal-400'}`}>
+                            {isTerminal ? `>_ ${catLabel}` : catLabel}
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {skills.map((skill) => (
                               <span
                                 key={skill.id}
-                                className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200"
+                                className={`px-1.5 py-0.5 rounded text-xs ${
+                                  isTerminal
+                                    ? 'font-mono text-emerald-300 bg-emerald-950/30 border border-emerald-500/20'
+                                    : 'font-sans bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200'
+                                }`}
                               >
-                                {skill.name}
+                                {isTerminal ? `> ${skill.name}` : skill.name}
                               </span>
                             ))}
                           </div>
@@ -448,40 +464,62 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
             {activeSlide === 'settings' && (
               <div className="flex-1 flex flex-col justify-center space-y-4 max-w-2xl mx-auto w-full animate-in fade-in zoom-in-95 duration-200">
                 <div className="border-b border-slate-200/80 dark:border-white/10 pb-2">
-                  <span className="font-mono text-[10px] text-teal-600 dark:text-teal-400 uppercase tracking-widest font-bold">
-                    PRESENTATION SETTINGS
+                  <span className="text-xs font-sans font-semibold text-teal-600 dark:text-teal-400">
+                    Cấu hình trình chiếu
                   </span>
                   <h2 className="text-xl sm:text-2xl font-bold">Cấu hình Slide & Trình chiếu</h2>
                 </div>
 
                 <div className="space-y-2.5">
+                  {/* Active Theme Preset Indicator */}
+                  <div className="p-3.5 rounded-xl border bg-slate-50/50 dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.06] flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-semibold">Template Giao diện Đang chọn</div>
+                      <div className="text-xs text-slate-400">{activePreset.tagline}</div>
+                    </div>
+                    <span
+                      className="px-2.5 py-1 rounded-lg text-xs font-sans font-semibold border flex items-center gap-1.5"
+                      style={{
+                        borderColor: `${activePreset.accentHex}40`,
+                        backgroundColor: activePreset.accentMutedHex,
+                        color: activePreset.accentHex,
+                      }}
+                    >
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: activePreset.accentHex }}
+                      />
+                      {activePreset.name}
+                    </span>
+                  </div>
+
                   <div className="p-3.5 rounded-xl border bg-slate-50/50 dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.06] flex items-center justify-between">
                     <div>
                       <div className="text-xs font-semibold">Trạng thái phát hành Live</div>
-                      <div className="text-[10px] text-slate-400">Cho phép công chúng truy cập xem slide deck</div>
+                      <div className="text-xs text-slate-400">Cho phép công chúng truy cập xem slide deck</div>
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${portfolio.isPublished ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/20 text-amber-600'}`}>
-                      {portfolio.isPublished ? 'ĐANG LIVE' : 'BẢN NHÁP'}
+                    <span className={`px-2 py-0.5 rounded text-xs font-sans font-semibold ${portfolio.isPublished ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/20 text-amber-600'}`}>
+                      {portfolio.isPublished ? 'Đang live' : 'Bản nháp'}
                     </span>
                   </div>
 
                   <div className="p-3.5 rounded-xl border bg-slate-50/50 dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.06] flex items-center justify-between">
                     <div>
                       <div className="text-xs font-semibold">Hiển thị Slide Dự án</div>
-                      <div className="text-[10px] text-slate-400">Trình diễn các case studies tiêu biểu</div>
+                      <div className="text-xs text-slate-400">Trình diễn các case studies tiêu biểu</div>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-teal-600 dark:text-teal-400">
-                      {portfolio.showProjects ? 'BẬT' : 'ẨN'}
+                    <span className="text-xs font-sans font-semibold text-teal-600 dark:text-teal-400">
+                      {portfolio.showProjects ? 'Bật' : 'Ẩn'}
                     </span>
                   </div>
 
                   <div className="p-3.5 rounded-xl border bg-slate-50/50 dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.06] flex items-center justify-between">
                     <div>
                       <div className="text-xs font-semibold">Hiển thị Slide Kinh nghiệm</div>
-                      <div className="text-[10px] text-slate-400">Dòng thời gian sự nghiệp</div>
+                      <div className="text-xs text-slate-400">Dòng thời gian sự nghiệp</div>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-teal-600 dark:text-teal-400">
-                      {portfolio.showExperience ? 'BẬT' : 'ẨN'}
+                    <span className="text-xs font-sans font-semibold text-teal-600 dark:text-teal-400">
+                      {portfolio.showExperience ? 'Bật' : 'Ẩn'}
                     </span>
                   </div>
                 </div>
@@ -491,7 +529,7 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
 
           {/* Stage Bottom Footer */}
           <div
-            className={`h-8 px-4 border-t flex items-center justify-between text-[10px] font-mono flex-shrink-0 ${
+            className={`h-8 px-4 border-t flex items-center justify-between text-xs font-sans flex-shrink-0 ${
               stageTheme === 'dark'
                 ? 'border-white/[0.06] bg-black/40 text-slate-500'
                 : 'border-slate-100 bg-slate-50/80 text-slate-400'
@@ -499,39 +537,12 @@ export const PresentationStage: React.FC<PresentationStageProps> = ({
           >
             <div className="flex items-center gap-1.5 text-teal-500">
               <MousePointerClick className="h-3 w-3" />
-              <span>CLICK VÀO TEXT ĐỂ SỬA TRỰC TIẾP</span>
+              <span>Bấm vào văn bản để sửa trực tiếp</span>
             </div>
-            <span className="text-slate-400 font-semibold">16:9 PRESENTATION STAGE</span>
+            <span className="text-slate-400 font-medium">Khung trình chiếu 16:9</span>
           </div>
         </div>
       </div>
-
-      {/* Floating Shortcut Helper Bar (Sticky at bottom, guaranteed NEVER cut off!) */}
-      <footer className="h-9 border-t border-slate-200/80 dark:border-white/[0.07] bg-white/95 dark:bg-[#0c131a]/95 px-4 flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400 flex-shrink-0 z-10 select-none">
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto">
-          <span className="text-slate-400 font-semibold hidden sm:inline">Phím tắt:</span>
-          <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 whitespace-nowrap">
-            [1..5] Chọn slide
-          </span>
-          <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 whitespace-nowrap">
-            [←/→] Đổi slide
-          </span>
-          <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 whitespace-nowrap">
-            [⌘K] Bảng lệnh
-          </span>
-          <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 whitespace-nowrap">
-            [⌘J] JSON
-          </span>
-          <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 whitespace-nowrap hidden md:inline">
-            [F5] Toàn màn hình
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 font-medium flex-shrink-0">
-          <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-          <span>SOODFOLIO STUDIO</span>
-        </div>
-      </footer>
     </div>
   );
 };

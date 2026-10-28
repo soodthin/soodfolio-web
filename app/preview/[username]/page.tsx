@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { PortfolioData } from '@/types/portfolio';
 import { VerticalStackDeck } from '@/components/deck/VerticalStackDeck';
 import { DeveloperNotFound } from '@/components/developer-not-found';
@@ -66,5 +66,5 @@ export default async function PortfolioPage({
     return <DeveloperNotFound username={username} />;
   }
 
-  return <VerticalStackDeck data={portfolio} />;
+  return <VerticalStackDeck data={portfolio} variant={portfolio.themeConfig} />;
 }

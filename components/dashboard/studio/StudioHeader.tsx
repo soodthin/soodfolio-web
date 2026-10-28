@@ -9,7 +9,6 @@ import {
   Copy,
   Check,
   ExternalLink,
-  Printer,
   ChevronDown,
   LogOut,
   Sun,
@@ -19,8 +18,9 @@ import {
   Loader2,
   AlertTriangle,
   History,
-  Command,
   UploadCloud,
+  Eye,
+  Settings,
 } from 'lucide-react';
 
 interface StudioHeaderProps {
@@ -33,6 +33,7 @@ interface StudioHeaderProps {
   isUpdatingStatus?: boolean;
   onToggleStatus?: () => void;
   onPublish?: () => void;
+  onOpenPreview?: () => void;
   onToggleTheme: () => void;
   onToggleLang: () => void;
   onCopyLink: () => void;
@@ -53,6 +54,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   isUpdatingStatus = false,
   onToggleStatus,
   onPublish,
+  onOpenPreview,
   onToggleTheme,
   onToggleLang,
   onCopyLink,
@@ -60,7 +62,6 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   onLogout,
   onOpenCommandPalette,
   onOpenSnapshots,
-  pendingChangesCount = 0,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -101,7 +102,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 w-full h-14 border-b border-slate-200/80 dark:border-white/[0.07] bg-white/95 dark:bg-[#080d12]/95 backdrop-blur-md transition-colors select-none flex-shrink-0">
       <div className="max-w-[1720px] mx-auto px-3 sm:px-5 h-full flex items-center justify-between gap-3">
-        {/* Left: Brand, Slash, Deck Title & Live URL */}
+        {/* Left: Brand, Middle Dot, User / Deck Title & URL Badge */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
           <Link
             href="/"
@@ -116,62 +117,60 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             </span>
           </Link>
 
-          <span className="text-slate-300 dark:text-white/15 text-xs">/</span>
+          <span className="text-slate-300 dark:text-white/20 text-xs">·</span>
 
-          {/* Deck Title & Copy Link Pill */}
+          {/* User Name, Title & Copy Link Pill */}
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 truncate max-w-[120px] sm:max-w-[180px] md:max-w-[220px]">
-              {portfolio?.title || `${fullName}'s Deck`}
-            </span>
+            <div className="flex items-center gap-1.5 truncate max-w-[140px] sm:max-w-[220px] md:max-w-[280px]">
+              <span className="font-semibold text-xs text-slate-900 dark:text-white truncate">
+                {fullName}
+              </span>
+              {portfolio?.title && (
+                <>
+                  <span className="text-slate-300 dark:text-white/20 text-xs hidden sm:inline">·</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:inline">
+                    {portfolio.title}
+                  </span>
+                </>
+              )}
+            </div>
 
             <button
               type="button"
               onClick={onCopyLink}
               title={`Sao chép link: soodfolio.com/${username}`}
-              className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 transition-all cursor-pointer flex-shrink-0"
+              aria-label={`Sao chép link chia sẻ soodfolio.com/${username}`}
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-sans font-medium bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 transition-all cursor-pointer flex-shrink-0"
             >
               <span className="text-teal-600 dark:text-teal-400 font-semibold">soodfolio.com/</span>
               <span>{username}</span>
               {copiedLink ? (
-                <Check className="h-2.5 w-2.5 text-teal-500" />
+                <Check className="h-3 w-3 text-teal-500" />
               ) : (
-                <Copy className="h-2.5 w-2.5 text-slate-400" />
+                <Copy className="h-3 w-3 text-slate-400" />
               )}
             </button>
           </div>
         </div>
 
-        {/* Middle: Command Palette Quick Search Trigger (Cmd+K) */}
-        {onOpenCommandPalette && (
-          <button
-            type="button"
-            onClick={onOpenCommandPalette}
-            className="hidden md:flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 bg-slate-100/70 dark:bg-white/[0.03] hover:bg-slate-200/70 dark:hover:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] transition-all cursor-pointer"
-            title="Mở bảng lệnh nhanh (Phím Cmd+K hoặc Ctrl+K)"
-          >
-            <Command className="h-3.5 w-3.5 text-slate-400" />
-            <span>Tìm lệnh hoặc nhảy slide...</span>
-            <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-white dark:bg-white/10 text-slate-500 border border-slate-200 dark:border-white/10">
-              ⌘K
-            </span>
-          </button>
-        )}
+
 
         {/* Right Action Bar */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Offline Indicator Chip */}
           {backendOffline && (
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-sans font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
               title="Chế độ Studio Ngoại tuyến: Không thể kết nối API. Đang lưu tạm trên trình duyệt."
             >
               <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-              <span>Chế độ Studio Ngoại tuyến</span>
+              <span className="hidden sm:inline">Chế độ Studio Ngoại tuyến</span>
               {onRetryConnection && (
                 <button
                   type="button"
                   onClick={onRetryConnection}
-                  className="underline hover:text-amber-500 text-[10px] cursor-pointer ml-1"
+                  aria-label="Thử lại kết nối máy chủ"
+                  className="underline hover:text-amber-500 text-xs cursor-pointer ml-1"
                 >
                   Thử lại
                 </button>
@@ -184,12 +183,13 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             type="button"
             onClick={handleStatusClick}
             disabled={isUpdatingStatus}
+            aria-label={isPublished ? 'Trạng thái: Công khai (Click để chuyển về Bản nháp)' : 'Trạng thái: Bản nháp (Click để Công khai)'}
             title={
               isPublished
                 ? 'Trạng thái: Công khai (Click để chuyển về Bản nháp)'
                 : 'Trạng thái: Bản nháp (Click để Công khai)'
             }
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium border cursor-pointer transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-sans font-medium border cursor-pointer transition-colors ${
               isPublished
                 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
                 : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
@@ -207,73 +207,44 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             <span>{isPublished ? 'LIVE' : 'DRAFT'}</span>
           </button>
 
-          {/* Single Primary Action: Publish Button */}
+          {/* Review Preview Button */}
+          {onOpenPreview && (
+            <button
+              type="button"
+              onClick={onOpenPreview}
+              aria-label="Mở Sân khấu trình chiếu Preview 16:9"
+              title="Mở Sân khấu trình chiếu Preview 16:9"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-sans font-semibold text-slate-800 dark:text-slate-100 hover:text-teal-600 dark:hover:text-teal-400 bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.09] border border-slate-200 dark:border-white/10 transition-all cursor-pointer shadow-xs"
+            >
+              <Eye className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 stroke-[2.2]" />
+              <span className="hidden sm:inline">Xem Preview</span>
+            </button>
+          )}
+
+          {/* Primary Action: Publish Button (Accent Kinpaku Gold) */}
           {onPublish && (
             <button
               type="button"
               onClick={onPublish}
               disabled={isUpdatingStatus}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-950 bg-teal-400 hover:bg-teal-300 transition-all cursor-pointer shadow-sm shadow-teal-500/20 disabled:opacity-50"
+              aria-label="Đóng băng snapshot và phát hành bản Live công khai"
               title="Đóng băng snapshot và phát hành bản Live công khai"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-sans font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 dark:bg-amber-400 dark:hover:bg-amber-300 transition-all cursor-pointer shadow-sm shadow-amber-500/20 disabled:opacity-50"
             >
               <UploadCloud className="h-3.5 w-3.5 stroke-[2.2]" />
               <span>Phát Hành</span>
             </button>
           )}
 
-          {/* Secondary Action: View Live (Neutral/Outline style, no competing Teal!) */}
-          <Link
-            href={`/preview/${username}`}
-            target="_blank"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 transition-all"
-            title="Xem bài thuyết trình trực tiếp trong tab mới"
-          >
-            <span className="hidden sm:inline">Xem Live</span>
-            <ExternalLink className="h-3 w-3 text-slate-400" />
-          </Link>
-
-          {/* Snapshot History Trigger */}
-          {onOpenSnapshots && (
-            <button
-              type="button"
-              onClick={onOpenSnapshots}
-              className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] transition-all cursor-pointer"
-              title="Xem lịch sử phiên bản SHA-256"
-            >
-              <History className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-              <span>Lịch sử</span>
-            </button>
-          )}
-
-          {/* Share Links Manager */}
-          <Link
-            href="/dashboard/links"
-            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] transition-all"
-            title="Quản lý link chia sẻ bảo vệ và xem Heatmap Telemetry"
-          >
-            <Share2 className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-            <span>Links</span>
-          </Link>
-
-          {/* Theme Switcher Toggle */}
-          <button
-            type="button"
-            onClick={onToggleTheme}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all cursor-pointer"
-            aria-label="Chuyển đổi giao diện Sáng / Tối"
-          >
-            {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-          </button>
-
-          {/* Profile & Dropdown Popover */}
+          {/* Vùng Chức Năng Dropdown */}
           <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Mở menu hồ sơ"
-              className="flex items-center gap-1 p-0.5 sm:px-1.5 sm:py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+              aria-label="Mở vùng chức năng tập trung"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 transition-all cursor-pointer font-sans font-medium text-xs"
             >
-              <div className="h-6 w-6 rounded-lg bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold text-[10px] flex items-center justify-center overflow-hidden border border-teal-500/30 flex-shrink-0">
+              <div className="h-6 w-6 rounded-md bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold text-xs flex items-center justify-center overflow-hidden border border-teal-500/30 flex-shrink-0">
                 {portfolio?.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={portfolio.avatarUrl} alt={fullName} className="h-full w-full object-cover" />
@@ -281,21 +252,24 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                   <span>{fullName.slice(0, 2).toUpperCase()}</span>
                 )}
               </div>
+              <span className="hidden md:inline">Vùng Chức Năng</span>
               <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Popover */}
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#0c131a] border border-slate-200 dark:border-white/10 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1.5">
+              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#0c131a] border border-slate-200/60 dark:border-white/[0.05] shadow-xs p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1.5 font-sans">
+                {/* User Identity Card */}
                 <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.04] space-y-0.5">
                   <div className="font-bold text-xs text-slate-900 dark:text-white truncate">{fullName}</div>
-                  <div className="text-[10px] font-mono text-teal-600 dark:text-teal-400 truncate">@{username}</div>
+                  <div className="text-xs font-sans font-medium text-teal-600 dark:text-teal-400 truncate">@{username}</div>
                   {user?.email && (
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{user.email}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</div>
                   )}
                 </div>
 
                 <div className="space-y-0.5 pt-1">
+                  {/* Copy Live Link */}
                   <button
                     type="button"
                     onClick={() => {
@@ -305,12 +279,27 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                     className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
-                      <Copy className="h-3 w-3 text-teal-600 dark:text-teal-400" />
+                      <Copy className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
                       <span>Sao chép liên kết</span>
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">soodfolio.com/{username}</span>
+                    <span className="text-xs text-slate-400 font-sans">Copy</span>
                   </button>
 
+                  {/* View Live */}
+                  <Link
+                    href={`/preview/${username}`}
+                    target="_blank"
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Xem Live công khai</span>
+                    </span>
+                    <span className="text-xs text-slate-400 font-sans">Mở tab</span>
+                  </Link>
+
+                  {/* Snapshot History */}
                   {onOpenSnapshots && (
                     <button
                       type="button"
@@ -321,49 +310,53 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                       className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
                     >
                       <span className="flex items-center gap-2">
-                        <History className="h-3 w-3 text-teal-600 dark:text-teal-400" />
-                        <span>Lịch sử phiên bản</span>
+                        <History className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                        <span>Lịch sử Snapshot</span>
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400">Snapshots</span>
+                      <span className="text-xs text-slate-400 font-sans">SHA-256</span>
                     </button>
                   )}
 
-                  <Link
-                    href={`/export/${username}`}
-                    target="_blank"
-                    onClick={() => setMenuOpen(false)}
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Printer className="h-3 w-3 text-amber-500" />
-                      <span>Xuất A4 PDF Dossier</span>
-                    </span>
-                    <ExternalLink className="h-2.5 w-2.5 text-slate-400" />
-                  </Link>
-
+                  {/* Share Links Manager */}
                   <Link
                     href="/dashboard/links"
                     onClick={() => setMenuOpen(false)}
                     className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
                   >
                     <span className="flex items-center gap-2">
-                      <Share2 className="h-3 w-3 text-teal-500" />
+                      <Share2 className="h-3.5 w-3.5 text-teal-500" />
                       <span>Quản lý Share Links</span>
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">Telemetry</span>
+                    <span className="text-xs text-slate-400 font-sans">Telemetry</span>
                   </Link>
 
+                  {/* Theme Switcher Toggle */}
+                  <button
+                    type="button"
+                    onClick={onToggleTheme}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      {theme === 'dark' ? <Sun className="h-3.5 w-3.5 text-amber-500" /> : <Moon className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />}
+                      <span>Giao diện</span>
+                    </span>
+                    <span className="text-xs font-sans font-medium text-teal-600 dark:text-teal-400">
+                      {theme === 'dark' ? 'Tối' : 'Sáng'}
+                    </span>
+                  </button>
+
+                  {/* Language Switcher Toggle */}
                   <button
                     type="button"
                     onClick={onToggleLang}
                     className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
-                      <Globe className="h-3 w-3 text-slate-400" />
+                      <Globe className="h-3.5 w-3.5 text-slate-400" />
                       <span>Ngôn ngữ Studio</span>
                     </span>
-                    <span className="text-[10px] font-mono font-bold uppercase text-teal-600 dark:text-teal-400">
-                      {lang}
+                    <span className="text-xs font-sans font-bold text-teal-600 dark:text-teal-400">
+                      {lang.toUpperCase()}
                     </span>
                   </button>
                 </div>

@@ -148,7 +148,7 @@ function LoginForm() {
             <div className="space-y-1">
               <label 
                 htmlFor="usernameOrEmail" 
-                className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+                className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
               >
                 Email hoặc Username
               </label>
@@ -161,7 +161,7 @@ function LoginForm() {
                   type="text"
                   value={usernameOrEmail}
                   onChange={(e) => setUsernameOrEmail(e.target.value)}
-                  placeholder="alex.vance hoặc alex@example.com"
+                  placeholder="alex.vance hoặc alex@soodfolio.com"
                   required
                   autoComplete="username"
                   className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 dark:bg-[#12141d] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-200 outline-none"
@@ -174,13 +174,13 @@ function LoginForm() {
               <div className="flex items-center justify-between">
                 <label 
                   htmlFor="password" 
-                  className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+                  className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
                 >
                   Mật khẩu
                 </label>
                 <Link 
                   href="/forgot-password" 
-                  className="text-[11px] text-teal-600 dark:text-teal-400 hover:text-teal-500 dark:hover:text-teal-300 hover:underline transition-colors font-medium"
+                  className="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-500 dark:hover:text-teal-300 hover:underline transition-colors font-medium"
                 >
                   Quên mật khẩu?
                 </Link>

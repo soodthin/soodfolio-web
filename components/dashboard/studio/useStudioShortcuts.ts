@@ -6,7 +6,6 @@ import { StudioSlideKey, STUDIO_SLIDES } from './types';
 interface UseStudioShortcutsProps {
   activeSlide: StudioSlideKey;
   onSelectSlide: (slide: StudioSlideKey) => void;
-  onToggleJsonMode?: () => void;
   onToggleFullscreen?: () => void;
   onToggleCommandPalette?: () => void;
 }
@@ -14,7 +13,6 @@ interface UseStudioShortcutsProps {
 export function useStudioShortcuts({
   activeSlide,
   onSelectSlide,
-  onToggleJsonMode,
   onToggleFullscreen,
   onToggleCommandPalette,
 }: UseStudioShortcutsProps) {
@@ -36,13 +34,6 @@ export function useStudioShortcuts({
           target.isContentEditable ||
           target.tagName === 'SELECT')
       ) {
-        return;
-      }
-
-      // Cmd+J or Ctrl+J: Toggle Form ↔ JSON Mode
-      if ((e.metaKey || e.ctrlKey) && (e.key === 'j' || e.key === 'J')) {
-        e.preventDefault();
-        onToggleJsonMode?.();
         return;
       }
 
@@ -77,5 +68,5 @@ export function useStudioShortcuts({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeSlide, onSelectSlide, onToggleJsonMode, onToggleFullscreen, onToggleCommandPalette]);
+  }, [activeSlide, onSelectSlide, onToggleFullscreen, onToggleCommandPalette]);
 }

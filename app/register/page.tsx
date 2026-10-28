@@ -172,8 +172,8 @@ export default function RegisterPage() {
               {/* Full Name */}
               <div className="space-y-1">
                 <label 
-                  htmlFor="fullName"
-                  className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+                  htmlFor="fullName" 
+                  className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
                 >
                   Họ và tên
                 </label>
@@ -197,12 +197,12 @@ export default function RegisterPage() {
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <label 
-                    htmlFor="username"
-                    className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+                    htmlFor="username" 
+                    className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
                   >
                     Username
                   </label>
-                  <span className="text-[10px] font-mono text-slate-400">
+                  <span className="text-xs font-mono text-slate-400">
                     soodfolio.com/{username ? username.toLowerCase() : 'you'}
                   </span>
                 </div>
@@ -227,8 +227,8 @@ export default function RegisterPage() {
             {/* Row 2: Email Address */}
             <div className="space-y-1">
               <label 
-                htmlFor="email"
-                className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+                htmlFor="email" 
+                className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
               >
                 Địa chỉ Email
               </label>
@@ -241,7 +241,7 @@ export default function RegisterPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="elena@example.com"
+                  placeholder="elena@soodfolio.com"
                   required
                   className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 dark:bg-[#12141d] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-200 outline-none"
                 />
@@ -251,8 +251,8 @@ export default function RegisterPage() {
             {/* Row 3: Mật khẩu (Label is just 'Mật khẩu', no (≥ 6 ký tự)) */}
             <div className="space-y-1">
               <label 
-                htmlFor="password"
-                className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+                htmlFor="password" 
+                className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
               >
                 Mật khẩu
               </label>
@@ -283,8 +283,8 @@ export default function RegisterPage() {
             {/* Row 4: Xác nhận mật khẩu (Nằm ngay dưới phần Mật khẩu) */}
             <div className="space-y-1">
               <label 
-                htmlFor="confirmPassword"
-                className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+                htmlFor="confirmPassword" 
+                className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
               >
                 Xác nhận mật khẩu
               </label>
@@ -321,7 +321,7 @@ export default function RegisterPage() {
                   <div className={`h-1 rounded-full transition-colors ${passwordScore >= 3 ? 'bg-teal-500' : 'bg-slate-200 dark:bg-white/10'}`} />
                   <div className={`h-1 rounded-full transition-colors ${passwordScore >= 4 ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-white/10'}`} />
                 </div>
-                <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 flex justify-between">
+                <div className="text-xs font-mono text-slate-500 dark:text-slate-400 flex justify-between">
                   <span>Độ an toàn mật khẩu</span>
                   <span className={passwordScore >= 4 ? 'text-emerald-600 dark:text-emerald-400' : 'text-teal-600 dark:text-teal-400'}>
                     {passwordScore <= 1 ? 'Cơ bản' : passwordScore <= 3 ? 'Khá' : 'Rất an toàn'}

@@ -6,6 +6,7 @@ import Lenis from 'lenis';
 import { PortfolioData } from '@/types/portfolio';
 import { ProjectImageStack } from '@/components/deck/ProjectImageStack';
 import { Locale, translations } from '@/lib/i18n';
+import { getThemePreset } from '@/lib/themePresets';
 import {
   playSlideSwitchSound,
   toggleMuteSound,
@@ -106,6 +107,7 @@ function SaigonLiveClock() {
 
 interface VerticalStackDeckProps {
   data: PortfolioData;
+  variant?: string | null;
 }
 
 // Context Mapping for Skill section hover tooltips
@@ -204,14 +206,14 @@ function SkillWithContext({ name }: { name: string }) {
         {name}
       </span>
       {contexts.length > 0 && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/skill:flex flex-col gap-1 z-30 px-3 py-2 rounded-xl bg-slate-950/95 dark:bg-[#0c1020]/95 border border-slate-700/70 dark:border-white/15 text-xs font-mono shadow-2xl backdrop-blur-md pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-100 text-left">
-          <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-            APPLIED IN
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/skill:flex flex-col gap-1 z-30 px-3 py-2 rounded-xl bg-slate-950/95 dark:bg-[#0c1020]/95 border border-slate-700/70 dark:border-white/15 text-xs font-sans shadow-2xl backdrop-blur-md pointer-events-none whitespace-nowrap animate-in fade-in zoom-in-95 duration-100 text-left">
+          <span className="text-xs text-slate-400 font-medium">
+            Được áp dụng tại
           </span>
           {contexts.map((c) => (
             <span key={c.label} className="flex items-center gap-1.5 text-slate-200">
-              <span className="text-teal-600 dark:text-[#2dd4bf] text-[10px] font-bold">
-                [{c.type === 'exp' ? 'EXP' : c.type === 'project' ? 'PROJECT' : 'USAGE'}]
+              <span className="text-teal-600 dark:text-[#2dd4bf] text-xs font-semibold">
+                {c.type === 'exp' ? 'Kinh nghiệm' : c.type === 'project' ? 'Dự án' : 'Ứng dụng'} •
               </span>
               <span className="font-medium">{c.label}</span>
             </span>
@@ -222,7 +224,13 @@ function SkillWithContext({ name }: { name: string }) {
   );
 }
 
-export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
+export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
+  const activePresetKey = variant || data.themeConfig || 'classic-deck';
+  const activePreset = getThemePreset(activePresetKey);
+  const isSpotlight = activePresetKey === 'spotlight-focus';
+  const isTerminal = activePresetKey === 'terminal-matrix';
+  const isEditorial = activePresetKey === 'editorial-clean';
+
   const [activeIdx, setActiveIdx] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -420,46 +428,23 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
   const project2Images = ['/images/restaurant1.png', '/images/restaurant2.png'];
 
   return (
-    <main className="relative min-h-screen bg-[#f8fafc] dark:bg-[#080d12] text-slate-800 dark:text-slate-100 selection:bg-teal-500/30 selection:text-white font-sans antialiased transition-colors duration-200">
-      {/* Architectural Grid Background (Quiet Luxury Vignette & Soft Ambient Lighting) */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-        {/* Light Mode Grid: Warm Paper Hairlines with Organic Vignette */}
-        <div
-          className="absolute inset-0 dark:hidden [mask-image:radial-gradient(ellipse_80%_65%_at_50%_25%,black_45%,transparent_92%)]"
-          style={{
-            backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px)`,
-            backgroundSize: '48px 48px',
-          }}
-        />
-        {/* Dark Mode Grid: Champagne Gold Hairlines with Organic Vignette Mask */}
-        <div
-          className="absolute inset-0 hidden dark:block [mask-image:radial-gradient(ellipse_80%_65%_at_50%_25%,black_40%,transparent_92%)]"
-          style={{
-            backgroundImage: `linear-gradient(to right, ${theme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(13, 148, 136, 0.08)'} 1px, transparent 1px), linear-gradient(to bottom, ${theme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(13, 148, 136, 0.08)'} 1px, transparent 1px)`,
-            backgroundSize: '48px 48px',
-          }}
-        />
-        {/* Ambient Top Champagne Gold Halo (Soft Studio Lighting for Quiet Luxury) */}
-        <div 
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[560px] pointer-events-none"
-          style={{
-            background: theme === 'dark' ? 'radial-gradient(circle at 50% 16%, rgba(45, 212, 191, 0.12) 0%, transparent 65%)' : 'radial-gradient(circle at 50% 16%, rgba(20, 184, 166, 0.12) 0%, transparent 65%)',
-          }}
-        />
-      </div>
-
+    <main
+      data-theme-preset={activePresetKey}
+      style={{ fontFamily: activePreset.fontVar }}
+      className="relative min-h-screen bg-[#f8fafc] dark:bg-[#080d12] text-slate-800 dark:text-slate-100 selection:bg-teal-500/30 selection:text-white font-sans antialiased transition-colors duration-200"
+    >
       {/* ========================================================================= */}
       {/* EDITORIAL FLOATING HEADER                                                 */}
       {/* ========================================================================= */}
-      <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-12 py-3.5 flex items-center justify-between backdrop-blur-md bg-[#f8fafc]/90 dark:bg-[#080d12]/85 border-b border-[#e2e8f0] dark:border-white/[0.07] shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-colors duration-200">
+      <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-12 py-3.5 flex items-center justify-between backdrop-blur-md bg-[#f8fafc]/90 dark:bg-[#080d12]/85 border-b border-[#e2e8f0] dark:border-white/[0.07] transition-colors duration-200">
         {/* Left: Identity Logo */}
-        <div className="flex items-center gap-3">
-          <div className="h-2 w-2 rounded-full bg-teal-500 dark:bg-[#2dd4bf] shadow-[0_0_8px_rgba(20,184,166,0.6)] dark:shadow-[0_0_8px_rgba(45,212,191,0.7)]" />
-          <span className="font-mono text-xs uppercase tracking-wider text-slate-950 dark:text-white font-bold">
-            {data.title || 'THAI DO THINH'}
+        <div className="flex items-center gap-2.5">
+          <div className="h-2 w-2 rounded-full bg-teal-500 dark:bg-[#2dd4bf]" />
+          <span className="font-sans text-xs text-slate-950 dark:text-white font-bold">
+            {data.title || 'Thai Do Thinh'}
           </span>
-          <span className="hidden sm:inline-block text-slate-400 dark:text-slate-600 font-mono text-xs">/</span>
-          <span className="hidden sm:inline-block font-mono text-xs text-slate-700 dark:text-slate-400 font-medium tracking-wide">
+          <span className="hidden sm:inline-block text-slate-400 dark:text-slate-600 text-xs">•</span>
+          <span className="hidden sm:inline-block font-sans text-xs text-slate-700 dark:text-slate-400 font-medium">
             {t.header.role}
           </span>
         </div>
@@ -470,7 +455,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           <button
             type="button"
             onClick={toggleLanguage}
-            className="px-2.5 py-1.5 rounded-lg bg-[#f1f5f9] hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 font-mono text-xs font-bold"
+            className="px-2.5 py-1.5 rounded-lg bg-[#f1f5f9] hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 font-sans text-xs font-bold"
             title={t.header.langTooltip}
           >
             <Globe className="h-3.5 w-3.5 text-teal-600 dark:text-[#2dd4bf]" />
@@ -537,18 +522,12 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           <button
             type="button"
             onClick={() => scrollToSection('contact')}
-            className="ml-1 px-4 py-1.5 rounded-lg bg-teal-600 dark:bg-[#2dd4bf] hover:bg-teal-700 dark:hover:bg-teal-300 text-white dark:text-[#080d12] font-semibold text-xs font-mono tracking-wider transition-all cursor-pointer active:scale-95 shadow-[0_2px_12px_rgba(13,148,136,0.35)] dark:shadow-[0_2px_12px_rgba(45,212,191,0.3)]"
+            className="ml-1 px-4 py-1.5 rounded-lg bg-teal-600 dark:bg-[#2dd4bf] hover:bg-teal-700 dark:hover:bg-teal-300 text-white dark:text-[#080d12] font-sans font-semibold text-xs transition-colors cursor-pointer active:scale-95"
           >
             {t.header.contactBtn}
           </button>
         </div>
       </header>
-
-      {/* Top Depth Edge Fade (Subtle dissolution at top edge to create depth without obscuring cards) */}
-      <div 
-        className="fixed top-[57px] left-0 right-0 h-16 pointer-events-none z-30 bg-gradient-to-b from-[#f8fafc] dark:from-[#080d12] via-[#f8fafc]/60 dark:via-[#080d12]/60 to-transparent [mask-image:linear-gradient(to_bottom,black_30%,transparent_100%)]" 
-        aria-hidden="true"
-      />
 
       {/* ========================================================================= */}
       {/* FLOATING RIGHT SECTION TRACKER (AUTO-DIMS WHEN IDLE)                      */}
@@ -565,12 +544,12 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
               key={item.id}
               type="button"
               onClick={() => scrollToSection(item.id)}
-              className="group flex items-center gap-2 cursor-pointer py-1 text-right transition-all"
+              className="group flex items-center gap-2 cursor-pointer py-1 text-right transition-colors"
             >
               <span
-                className={`font-mono text-[10px] tracking-wider transition-all duration-200 ${
+                className={`font-sans text-xs transition-all duration-200 ${
                   isActive
-                    ? 'text-teal-600 dark:text-[#2dd4bf] font-bold opacity-100 translate-x-0'
+                    ? 'text-teal-600 dark:text-[#2dd4bf] font-semibold opacity-100 translate-x-0'
                     : 'text-slate-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 group-hover:text-slate-700 dark:group-hover:text-slate-300 translate-x-1 group-hover:translate-x-0'
                 }`}
               >
@@ -595,11 +574,13 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
         {/* ======================================================================= */}
         <section
           id="summary"
-          className="w-full max-w-[1280px] mx-auto space-y-10 pt-4 pb-4"
+          className={`w-full max-w-[1280px] mx-auto space-y-10 pt-4 pb-4 ${
+            isSpotlight ? 'text-center' : ''
+          }`}
           style={{ paddingInline: 'clamp(20px, 5vw, 72px)' }}
         >
           {/* Eyebrow Status Ribbon */}
-          <div className={`flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-mono transition-opacity duration-500 ${
+          <div className={`flex flex-wrap items-center ${isSpotlight ? 'justify-center' : ''} gap-3 sm:gap-4 text-xs font-mono transition-opacity duration-500 ${
             activeIdx > 0 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
           }`}>
             <span className="inline-flex items-center gap-2 text-slate-800 dark:text-slate-200 font-medium">
@@ -613,9 +594,13 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           </div>
 
           {/* Top Row: [ Name 2 lines + Title line ] [ Circular Avatar ] */}
-          <div className="grid grid-cols-1 min-[820px]:grid-cols-[1fr_260px] lg:min-[820px]:grid-cols-[1fr_280px] gap-8 lg:gap-12 items-center">
+          <div className={`grid grid-cols-1 ${
+            isSpotlight
+              ? 'justify-items-center text-center'
+              : 'min-[820px]:grid-cols-[1fr_260px] lg:min-[820px]:grid-cols-[1fr_280px]'
+          } gap-8 lg:gap-12 items-center`}>
             {/* Left Column: Name (2 lines: THAI DO / THINH) & Title Line */}
-            <div className="min-w-0 space-y-3 sm:space-y-4">
+            <div className={`min-w-0 space-y-3 sm:space-y-4 ${isSpotlight ? 'text-center order-2 sm:order-1' : ''}`}>
               <h1
                 className="font-black uppercase tracking-tight text-slate-950 dark:text-white leading-[0.88] select-none"
                 style={{ fontSize: 'clamp(2.75rem, 6.5vw, 5.75rem)' }}
@@ -625,13 +610,13 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
               </h1>
 
               {/* Title Line */}
-              <p className="text-sm sm:text-base lg:text-lg font-mono text-teal-600 dark:text-[#2dd4bf] font-semibold tracking-wide uppercase pt-1">
+              <p className="text-sm sm:text-base lg:text-lg font-sans text-teal-600 dark:text-[#2dd4bf] font-medium pt-1">
                 {lang === 'vi' ? t.hero.tagline : (data.tagline ? data.tagline.replace(/\s*\/\/\s*/g, ' · ') : t.hero.tagline)}
               </p>
             </div>
 
             {/* Right Column: Circular Avatar */}
-            <div className="flex justify-center min-[820px]:justify-end items-center">
+            <div className={`flex justify-center ${isSpotlight ? 'order-1 sm:order-2' : 'min-[820px]:justify-end'} items-center`}>
               <div className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 aspect-square overflow-hidden rounded-full bg-teal-50 dark:bg-[#0d131a] border-4 border-teal-500 dark:border-[#2dd4bf] ring-4 ring-teal-500/20 dark:ring-[#2dd4bf]/25 shadow-[0_12px_40px_rgba(13,148,136,0.25)] dark:shadow-[0_0_35px_rgba(45,212,191,0.3)] transition-all">
                 <img
                   src={userAvatar}
@@ -644,14 +629,16 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           </div>
 
           {/* Intro Paragraph (nội dung - max-width 60ch) */}
-          <div className="pt-2">
+          <div className={`pt-2 ${isSpotlight ? 'text-center max-w-2xl mx-auto' : ''}`}>
             <p className="text-base sm:text-lg text-slate-800 dark:text-slate-300 leading-relaxed font-sans w-full">
               {lang === 'vi' ? t.hero.bio : (data.bio || t.hero.bio)}
             </p>
           </div>
 
           {/* Stats Row Moved Below Intro Content */}
-          <div className="border-t border-[#e2e8f0] dark:border-white/10 pt-6 sm:pt-8 grid grid-cols-1 min-[820px]:grid-cols-3 gap-6 sm:gap-8">
+          <div className={`border-t border-[#e2e8f0] dark:border-white/10 pt-6 sm:pt-8 grid grid-cols-1 min-[820px]:grid-cols-3 gap-6 sm:gap-8 ${
+            isSpotlight ? 'text-center' : ''
+          }`}>
             {/* Stat 1 */}
             <div className="flex flex-col">
               <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono text-slate-950 dark:text-white tracking-tight tabular-nums whitespace-nowrap">
@@ -696,10 +683,10 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
             activeIdx > 1 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
           }`}>
             <div>
-              <span className="text-teal-600 dark:text-[#2dd4bf] font-mono text-xs tracking-wider uppercase block mb-1 font-bold">
+              <span className="text-teal-600 dark:text-[#2dd4bf] font-sans text-xs block mb-1 font-semibold">
                 {t.experience.eyebrow}
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white uppercase">
+              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-950 dark:text-white">
                 {t.experience.title}
               </h2>
             </div>
@@ -709,7 +696,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           <div className="relative pl-7 sm:pl-10 lg:pl-12 space-y-10 sm:space-y-12">
             {/* Continuous Vertical Career Lifecycle Spine */}
             <div 
-              className="absolute left-[11px] sm:left-[15px] lg:left-[19px] top-3 bottom-6 w-[2px] bg-gradient-to-b from-teal-600 dark:from-[#2dd4bf] via-teal-600/40 dark:via-[#2dd4bf]/40 to-slate-300 dark:to-white/10 pointer-events-none" 
+              className="absolute left-[11px] sm:left-[15px] lg:left-[19px] top-3 bottom-6 w-[2px] bg-teal-500/25 dark:bg-teal-400/20 pointer-events-none" 
               aria-hidden="true"
             />
 
@@ -738,9 +725,9 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-teal-500/10 dark:bg-[#2dd4bf]/12 text-teal-600 dark:text-[#2dd4bf] border border-[#0d9488]/20 dark:border-[#2dd4bf]/25">
                   <Building2 className="h-3 w-3" />
-                  <span>BW INDUSTRIAL DEVELOPMENT JSC</span>
+                  <span>BW Industrial Development JSC</span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-950 dark:text-white uppercase tracking-tight pt-1">
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white pt-1">
                   {t.experience.role1}
                 </h3>
                 <div className="text-xs font-mono text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-2">
@@ -765,7 +752,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
 
             {/* 4 Clean High-Signal Engineering Accomplishments */}
             <div className="space-y-3 pt-1">
-              <div className="text-xs font-mono font-bold text-teal-600 dark:text-[#2dd4bf] uppercase tracking-wider">
+              <div className="text-xs font-sans font-semibold text-teal-600 dark:text-[#2dd4bf]">
                 {t.experience.deliverablesHeader}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-sans text-xs sm:text-sm">
@@ -845,9 +832,9 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
               {/* Academic Foundation: Minimalist Clean Row */}
               <div className="p-6 rounded-2xl border border-[#e2e8f0] dark:border-white/10 bg-white dark:bg-white/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono">
             <div>
-              <div className="text-xs text-teal-600 dark:text-[#2dd4bf] font-bold uppercase tracking-wider flex items-center gap-2">
+              <div className="text-xs text-teal-600 dark:text-[#2dd4bf] font-semibold font-sans flex items-center gap-2">
                 <Award className="h-3.5 w-3.5" />
-                <span>EDUCATION</span>
+                <span>Education</span>
               </div>
               <h4 className="text-base sm:text-lg font-bold text-slate-950 dark:text-white pt-0.5 font-sans">
                 {t.experience.eduSchool}
@@ -873,10 +860,10 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
             activeIdx > 2 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
           }`}>
             <div>
-              <span className="text-teal-600 dark:text-[#2dd4bf] font-mono text-xs tracking-wider uppercase block mb-1 font-bold">
+              <span className="text-teal-600 dark:text-[#2dd4bf] font-sans text-xs font-semibold block mb-1">
                 {t.works.eyebrow}
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white uppercase">
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white">
                 {t.works.title}
               </h2>
             </div>
@@ -886,7 +873,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           <div className="relative pl-7 sm:pl-10 lg:pl-12 space-y-24 sm:space-y-32">
             {/* Continuous Vertical Architecture Spine */}
             <div 
-              className="absolute left-[11px] sm:left-[15px] lg:left-[19px] top-2 bottom-8 w-[2px] bg-gradient-to-b from-teal-600 dark:from-[#2dd4bf] via-teal-600/40 dark:via-[#2dd4bf]/40 to-slate-300 dark:to-white/10 pointer-events-none" 
+              className="absolute left-[11px] sm:left-[15px] lg:left-[19px] top-2 bottom-8 w-[2px] bg-teal-500/25 dark:bg-teal-400/20 pointer-events-none" 
               aria-hidden="true"
             />
 
@@ -917,7 +904,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                     href="https://github.com/soodthin/FlexiConnect"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white uppercase hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
+                    className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
                   >
                     <span>FlexiConnect Web</span>
                     <ArrowUpRight className="h-6 w-6 sm:h-7 sm:w-7 text-teal-600 dark:text-[#2dd4bf] group-hover/title:translate-x-1 group-hover/title:-translate-y-1 transition-transform" />
@@ -952,7 +939,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
               <div className="lg:col-span-5 flex flex-col justify-between items-start h-full space-y-4">
                 <div className="w-full space-y-3">
                   <div className="text-xs font-mono text-slate-700 dark:text-slate-400">
-                    <strong className="text-slate-950 dark:text-white font-bold uppercase tracking-wider block mb-1">{t.works.techStackLabel}</strong>
+                    <strong className="text-slate-950 dark:text-white font-semibold font-sans block mb-1">{t.works.techStackLabel}</strong>
                     <span>Spring Boot · ReactJS · Vite · Tailwind CSS · MySQL · Spring Security · JWT · Render</span>
                   </div>
                   <ProjectImageStack
@@ -990,7 +977,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                     href="https://github.com/soodthin/T-Restaurant-App"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white uppercase hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
+                    className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
                   >
                     <span>Food Delivery & Restaurant App</span>
                     <ArrowUpRight className="h-6 w-6 sm:h-7 sm:w-7 text-teal-600 dark:text-[#2dd4bf] group-hover/title:translate-x-1 group-hover/title:-translate-y-1 transition-transform" />
@@ -1025,7 +1012,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
               <div className="lg:col-span-5 flex flex-col justify-between items-start h-full space-y-4">
                 <div className="w-full space-y-3">
                   <div className="text-xs font-mono text-slate-700 dark:text-slate-400">
-                    <strong className="text-slate-950 dark:text-white font-bold uppercase tracking-wider block mb-1">{t.works.techStackLabel}</strong>
+                    <strong className="text-slate-950 dark:text-white font-semibold font-sans block mb-1">{t.works.techStackLabel}</strong>
                     <span>React Native · Expo · Django REST · MoMo · Stripe · Firebase · PostgreSQL</span>
                   </div>
                   <ProjectImageStack
@@ -1052,7 +1039,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                 <div className="flex items-center gap-2 font-mono text-xs text-teal-600 dark:text-[#2dd4bf] font-bold">
                   <span>03</span>
                   <span className="text-slate-400 dark:text-slate-600">·</span>
-                  <span>TYPOGRAPHIC STATIC ENGINE</span>
+                  <span>Typographic Static Engine</span>
                   <span className="text-slate-400 dark:text-slate-600">·</span>
                   <span className="text-slate-500 dark:text-slate-400 font-normal">2026</span>
                 </div>
@@ -1064,7 +1051,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                       href="https://soodthin.github.io/dev-portfolio/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white uppercase hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
+                      className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
                     >
                       <span>Dev Portfolio Engine</span>
                       <ArrowUpRight className="h-6 w-6 sm:h-7 sm:w-7 text-teal-600 dark:text-[#2dd4bf] group-hover/title:translate-x-1 group-hover/title:-translate-y-1 transition-transform" />
@@ -1121,7 +1108,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                   </div>
 
                   <div className="text-xs font-mono text-slate-700 dark:text-slate-400">
-                    <strong className="text-slate-950 dark:text-white font-bold uppercase tracking-wider block mb-1">{t.works.techStackLabel}</strong>
+                    <strong className="text-slate-950 dark:text-white font-semibold font-sans block mb-1">{t.works.techStackLabel}</strong>
                     <span>Next.js 16 · TypeScript · Tailwind CSS v4 · GitHub Pages · GitHub Actions CI/CD</span>
                   </div>
 
@@ -1155,10 +1142,10 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           <div className={`relative z-10 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#e2e8f0] dark:border-white/10 transition-opacity duration-500 ${
             activeIdx > 3 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
           }`}>
-            <span className="text-teal-600 dark:text-[#2dd4bf] font-mono text-xs tracking-wider uppercase font-bold">
-              TECHNICAL CAPABILITIES
+            <span className="text-teal-600 dark:text-[#2dd4bf] font-sans text-xs font-semibold">
+              Technical Capabilities
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white uppercase text-left sm:text-right">
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white text-left sm:text-right">
               Skills & Tooling
             </h2>
           </div>
@@ -1167,11 +1154,11 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           <div className="relative z-10 space-y-6 font-mono text-sm">
             {/* Row 1: Languages */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 py-4 border-b border-[#e2e8f0] dark:border-white/10 items-baseline backdrop-blur-[1px]">
-              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-bold uppercase text-xs tracking-wider flex items-center gap-2.5">
+              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-semibold text-xs font-sans flex items-center gap-2.5">
                 <div className="p-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-500 flex items-center justify-center shrink-0">
                   <Code2 className="h-3.5 w-3.5" />
                 </div>
-                <span>LANGUAGES</span>
+                <span>Languages</span>
               </div>
               <div className="md:col-span-9 text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed flex flex-wrap items-center gap-y-2">
                 {['JavaScript', 'TypeScript', 'Java', 'Python', 'C++'].map((skill, idx) => (
@@ -1185,11 +1172,11 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
 
             {/* Row 2: Frameworks */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 py-4 border-b border-[#e2e8f0] dark:border-white/10 items-baseline backdrop-blur-[1px]">
-              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-bold uppercase text-xs tracking-wider flex items-center gap-2.5">
+              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-semibold text-xs font-sans flex items-center gap-2.5">
                 <div className="p-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-500 flex items-center justify-center shrink-0">
                   <Layers className="h-3.5 w-3.5" />
                 </div>
-                <span>FRAMEWORKS & LIBS</span>
+                <span>Frameworks & Libraries</span>
               </div>
               <div className="md:col-span-9 text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed flex flex-wrap items-center gap-y-2">
                 {['ReactJS', 'Next.js', 'Spring Boot', 'FastAPI', 'Django', 'Tailwind CSS', 'RESTful API'].map((skill, idx) => (
@@ -1203,11 +1190,11 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
 
             {/* Row 3: Data & Cloud DevOps */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 py-4 border-b border-[#e2e8f0] dark:border-white/10 items-baseline backdrop-blur-[1px]">
-              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-bold uppercase text-xs tracking-wider flex items-center gap-2.5">
+              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-semibold text-xs font-sans flex items-center gap-2.5">
                 <div className="p-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-500 flex items-center justify-center shrink-0">
                   <Database className="h-3.5 w-3.5" />
                 </div>
-                <span>DATA & DEVOPS</span>
+                <span>Data & DevOps</span>
               </div>
               <div className="md:col-span-9 text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed flex flex-wrap items-center gap-y-2">
                 {['PostgreSQL', 'MySQL', 'Redis', 'Git', 'GitHub Actions', 'Postman', 'Render'].map((skill, idx) => (
@@ -1221,11 +1208,11 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
 
             {/* Row 4: AI Engineering */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 py-4 border-b border-[#e2e8f0] dark:border-white/10 items-baseline backdrop-blur-[1px]">
-              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-bold uppercase text-xs tracking-wider flex items-center gap-2.5">
+              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-semibold text-xs font-sans flex items-center gap-2.5">
                 <div className="p-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-500 flex items-center justify-center shrink-0">
                   <Sparkles className="h-3.5 w-3.5" />
                 </div>
-                <span>AI TOOLING</span>
+                <span>AI Tooling</span>
               </div>
               <div className="md:col-span-9 text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed flex flex-wrap items-center gap-y-2">
                 {['Claude Code', 'Codex', 'Antigravity (IDE)', 'Prompt Engineering', 'Code Verification'].map((skill, idx) => (
@@ -1246,10 +1233,10 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#e2e8f0] dark:border-white/10">
             <div>
-              <span className="text-teal-600 dark:text-[#2dd4bf] font-mono text-xs tracking-wider uppercase block mb-1 font-bold">
-                GET IN TOUCH
+              <span className="text-teal-600 dark:text-[#2dd4bf] font-sans text-xs font-semibold block mb-1">
+                Get in Touch
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white uppercase">
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white">
                 Let's Build Together.
               </h2>
             </div>
@@ -1265,7 +1252,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
 
           {/* Giant Copyable Email */}
           <div className="py-6 space-y-4">
-            <div className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <div className="text-xs font-sans text-slate-500 dark:text-slate-400">
               {t.contact.copyPrompt}
             </div>
             <div
@@ -1302,7 +1289,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                 <Phone className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 block uppercase">{t.contact.phoneLabel}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 block font-sans">{t.contact.phoneLabel}</span>
                 <span className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf]">
                   (+84) 869 922 096
                 </span>
@@ -1320,7 +1307,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                 <GithubIcon className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 block uppercase">{t.contact.githubLabel}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 block font-sans">{t.contact.githubLabel}</span>
                 <span className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] flex items-center gap-1">
                   github.com/soodthin
                   <ArrowUpRight className="h-3 w-3" />
@@ -1339,7 +1326,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                 <LinkedinIcon className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 block uppercase">{t.contact.linkedinLabel}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 block font-sans">{t.contact.linkedinLabel}</span>
                 <span className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] flex items-center gap-1">
                   thinh-thai-dev
                   <ArrowUpRight className="h-3 w-3" />
@@ -1358,7 +1345,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
                 <FileText className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-[10px] text-teal-600 dark:text-[#2dd4bf] block uppercase font-bold">{t.contact.cvLabel}</span>
+                <span className="text-xs text-teal-600 dark:text-[#2dd4bf] block font-sans font-semibold">{t.contact.cvLabel}</span>
                 <span className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] flex items-center gap-1">
                   {t.contact.cvAction}
                   <ArrowUpRight className="h-3 w-3" />
@@ -1371,7 +1358,7 @@ export function VerticalStackDeck({ data }: VerticalStackDeckProps) {
         {/* Footer */}
         <footer className="pt-16 pb-8 border-t border-[#e2e8f0] dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500 dark:text-slate-400">
           <div>
-            © 2026 THAI DO THINH. POWERED BY SOODFOLIO PLATFORM.
+            © 2026 Thai Do Thinh • Powered by SoodFolio Platform
           </div>
           <div className="flex items-center gap-2 text-slate-400">
             <span>Ho Chi Minh City, Viet Nam</span>

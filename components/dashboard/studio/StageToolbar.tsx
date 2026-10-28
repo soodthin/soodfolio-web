@@ -118,12 +118,13 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
           onClick={handlePrev}
           disabled={currentIndex === 0}
           title="Slide trước (Phím ←)"
+          aria-label="Slide trước"
           className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-500 dark:text-slate-400 disabled:opacity-20 transition-colors cursor-pointer"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
 
-        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.04] text-slate-800 dark:text-slate-200 font-semibold text-[11px]">
+        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.04] text-slate-800 dark:text-slate-200 font-semibold text-[11px] tabular-nums">
           SLIDE {currentSlide.number} · 0{STUDIO_SLIDES.length}
         </span>
 
@@ -132,6 +133,7 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
           onClick={handleNext}
           disabled={currentIndex === STUDIO_SLIDES.length - 1}
           title="Slide kế tiếp (Phím →)"
+          aria-label="Slide kế tiếp"
           className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-500 dark:text-slate-400 disabled:opacity-20 transition-colors cursor-pointer"
         >
           <ChevronRight className="h-4 w-4" />
@@ -144,6 +146,7 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
           type="button"
           onClick={onToggleStageTheme}
           title={`Xem trước giao diện: ${stageTheme === 'dark' ? 'Dark' : 'Light'}`}
+          aria-label="Chuyển đổi giao diện Sáng / Tối của sân khấu"
           className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
         >
           {stageTheme === 'dark' ? <Moon className="h-3.5 w-3.5 text-teal-400" /> : <Sun className="h-3.5 w-3.5 text-amber-500" />}
@@ -153,6 +156,7 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
           type="button"
           onClick={onToggleFullscreen}
           title={isFullscreen ? 'Thu nhỏ (F5)' : 'Toàn màn hình Sân khấu (F5)'}
+          aria-label="Chuyển đổi chế độ toàn màn hình"
           className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
         >
           {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}

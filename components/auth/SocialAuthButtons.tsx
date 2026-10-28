@@ -34,7 +34,7 @@ export function SocialAuthButtons({ label = 'Hoặc đăng nhập nhanh bằng' 
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-slate-200/80 dark:border-white/10" />
         </div>
-        <div className="relative px-3 bg-white dark:bg-[#0c141d] text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <div className="relative px-3 bg-white dark:bg-[#0c141d] text-xs font-sans font-medium text-slate-500 dark:text-slate-400">
           {label}
         </div>
       </div>

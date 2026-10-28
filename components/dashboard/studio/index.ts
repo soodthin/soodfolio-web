@@ -5,6 +5,6 @@ export * from './SlideRail';
 export * from './SlideInspector';
 export * from './PresentationStage';
 export * from './StageToolbar';
-export * from './JsonCodeEditor';
 export * from './StudioCommandPalette';
 export * from './SnapshotHistoryModal';
+export * from './PreviewModal';

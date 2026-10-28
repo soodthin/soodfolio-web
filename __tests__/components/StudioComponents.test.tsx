@@ -1,10 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SlideRail } from '@/components/dashboard/studio/SlideRail';
 import { StageToolbar } from '@/components/dashboard/studio/StageToolbar';
 import { StudioHeader } from '@/components/dashboard/studio/StudioHeader';
+import { PreviewModal } from '@/components/dashboard/studio/PreviewModal';
+import { GitHubImportModal } from '@/components/dashboard/studio/inspectors/GitHubImportModal';
 import { PortfolioData } from '@/types/portfolio';
+import * as apiClient from '@/lib/apiClient';
 
 const mockPortfolio: PortfolioData = {
   id: 'p1',
@@ -146,4 +149,86 @@ describe('Studio Subcomponents Unit Tests', () => {
       expect(onToggleStatus).toHaveBeenCalled();
     });
   });
+
+  describe('PreviewModal Component', () => {
+    it('renders fullscreen 16:9 stage with stepper and triggers navigation', () => {
+      const onClose = vi.fn();
+      const onSelectSlide = vi.fn();
+      const onToggleStageTheme = vi.fn();
+      const onSetZoom = vi.fn();
+      const onSetViewportMode = vi.fn();
+      const onToggleFullscreen = vi.fn();
+
+      render(
+        <PreviewModal
+          isOpen={true}
+          onClose={onClose}
+          portfolio={mockPortfolio}
+          activeSlide="projects"
+          onSelectSlide={onSelectSlide}
+          stageTheme="dark"
+          onToggleStageTheme={onToggleStageTheme}
+          zoom="fit"
+          onSetZoom={onSetZoom}
+          viewportMode="16:9"
+          onSetViewportMode={onSetViewportMode}
+          isFullscreen={false}
+          onToggleFullscreen={onToggleFullscreen}
+        />
+      );
+
+      expect(screen.getByText(/02 \/ 05/i)).toBeDefined();
+      expect(screen.getByText('Selected Case Studies')).toBeDefined();
+
+      const prevBtn = screen.getByTitle(/Slide trước/i);
+      fireEvent.click(prevBtn);
+      expect(onSelectSlide).toHaveBeenCalledWith('cover');
+
+      const closeBtn = screen.getByLabelText(/Đóng bản xem trước Preview/i);
+      fireEvent.click(closeBtn);
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('GitHubImportModal Component', () => {
+    it('renders repository import dialog and triggers search', async () => {
+      const onClose = vi.fn();
+      const onProjectImported = vi.fn();
+
+      vi.spyOn(apiClient, 'fetchWithAuth').mockResolvedValue(
+        new Response(
+          JSON.stringify([
+            {
+              name: 'awesome-gateway',
+              description: 'A cloud native api gateway',
+              language: 'Go',
+              html_url: 'https://github.com/testdev/awesome-gateway',
+              stargazers_count: 120,
+              topics: ['gateway', 'cloud'],
+            },
+          ]),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      );
+
+      render(
+        <GitHubImportModal
+          isOpen={true}
+          onClose={onClose}
+          onProjectImported={onProjectImported}
+          defaultUsername="testdev"
+        />
+      );
+
+      expect(screen.getByText('Import Repository từ GitHub')).toBeDefined();
+      expect(await screen.findByText('awesome-gateway')).toBeDefined();
+      expect(screen.getByText('A cloud native api gateway')).toBeDefined();
+
+      const importBtn = screen.getByRole('button', { name: /Import repository awesome-gateway vào slide deck/i });
+      fireEvent.click(importBtn);
+
+      expect(importBtn).toBeDefined();
+    });
+  });
 });
+

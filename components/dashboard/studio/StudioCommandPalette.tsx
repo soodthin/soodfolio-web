@@ -7,11 +7,9 @@ import {
   Layers,
   ExternalLink,
   Copy,
-  Printer,
   Share2,
   Sun,
   Moon,
-  Code,
   Maximize2,
   History,
   CheckCircle2,
@@ -21,6 +19,7 @@ import {
   Briefcase,
   Cpu,
   Sliders,
+  Eye,
 } from 'lucide-react';
 
 interface StudioCommandPaletteProps {
@@ -30,9 +29,9 @@ interface StudioCommandPaletteProps {
   onPublish: () => void;
   onCopyLink: () => void;
   onToggleTheme: () => void;
-  onToggleJsonMode: () => void;
   onToggleFullscreen: () => void;
   onOpenSnapshots: () => void;
+  onOpenPreview?: () => void;
   username: string;
   theme: 'dark' | 'light';
 }
@@ -52,9 +51,9 @@ export const StudioCommandPalette: React.FC<StudioCommandPaletteProps> = ({
   onPublish,
   onCopyLink,
   onToggleTheme,
-  onToggleJsonMode,
   onToggleFullscreen,
   onOpenSnapshots,
+  onOpenPreview,
   username,
   theme,
 }) => {
@@ -139,16 +138,6 @@ export const StudioCommandPalette: React.FC<StudioCommandPaletteProps> = ({
       },
     },
     {
-      id: 'action-export-pdf',
-      label: 'Xuất hồ sơ Dossier A4 (PDF)',
-      category: 'Xuất Bản & Chia Sẻ',
-      icon: Printer,
-      action: () => {
-        window.open(`/export/${username}`, '_blank');
-        onClose();
-      },
-    },
-    {
       id: 'action-share-links',
       label: 'Quản lý Targeted Share Links & Heatmap',
       category: 'Xuất Bản & Chia Sẻ',
@@ -169,17 +158,21 @@ export const StudioCommandPalette: React.FC<StudioCommandPaletteProps> = ({
         onClose();
       },
     },
-    {
-      id: 'setting-json',
-      label: 'Bật/Tắt chế độ JSON Spec',
-      category: 'Tuỳ Chỉnh Studio',
-      icon: Code,
-      shortcut: 'Cmd+J',
-      action: () => {
-        onToggleJsonMode();
-        onClose();
-      },
-    },
+    ...(onOpenPreview
+      ? [
+          {
+            id: 'setting-preview',
+            label: 'Mở Sân khấu Xem Preview 16:9',
+            category: 'Tuỳ Chỉnh Studio',
+            icon: Eye,
+            shortcut: 'P',
+            action: () => {
+              onOpenPreview();
+              onClose();
+            },
+          },
+        ]
+      : []),
     {
       id: 'setting-fullscreen',
       label: 'Chế độ Trình chiếu Toàn màn hình',
@@ -243,8 +236,8 @@ export const StudioCommandPalette: React.FC<StudioCommandPaletteProps> = ({
             placeholder="Tìm kiếm tác vụ, nhảy tới slide, phát hành... (Gõ để lọc)"
             className="flex-1 bg-transparent text-sm placeholder:text-slate-400 focus:outline-none font-medium"
           />
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-400 border border-slate-200 dark:border-white/10">
-            ESC
+          <span className="text-xs font-sans font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-400 border border-slate-200 dark:border-white/10">
+            Esc
           </span>
         </div>
 
@@ -284,14 +277,14 @@ export const StudioCommandPalette: React.FC<StudioCommandPaletteProps> = ({
                       </div>
                       <div className="truncate">
                         <div className="truncate">{cmd.label}</div>
-                        <div className="text-[10px] text-slate-400 font-normal">{cmd.category}</div>
+                        <div className="text-xs text-slate-400 font-normal">{cmd.category}</div>
                       </div>
                     </div>
 
                     {cmd.shortcut && (
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-400 border border-slate-200 dark:border-white/10 flex-shrink-0 ml-2">
+                      <kbd className="text-xs font-sans font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/[0.06] text-slate-400 border border-slate-200 dark:border-white/10 flex-shrink-0 ml-2">
                         {cmd.shortcut}
-                      </span>
+                      </kbd>
                     )}
                   </button>
                 );
@@ -301,12 +294,12 @@ export const StudioCommandPalette: React.FC<StudioCommandPaletteProps> = ({
         </div>
 
         {/* Footer info */}
-        <div className="px-4 py-2 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-black/20 flex items-center justify-between text-[11px] font-mono text-slate-400">
+        <div className="px-4 py-2 border-t border-slate-100 dark:border-white/[0.06] bg-slate-50/50 dark:bg-black/20 flex items-center justify-between text-[11px] font-sans font-medium text-slate-400">
           <div className="flex items-center gap-3">
             <span>↑↓ Di chuyển</span>
             <span>↵ Chọn</span>
           </div>
-          <span className="text-teal-600 dark:text-teal-400 font-medium">SOODFOLIO COMMAND</span>
+          <span className="text-teal-600 dark:text-teal-400 font-medium">SoodFolio Command</span>
         </div>
       </div>
     </div>

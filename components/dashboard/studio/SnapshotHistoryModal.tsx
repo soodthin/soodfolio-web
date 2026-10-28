@@ -118,12 +118,12 @@ export const SnapshotHistoryModal: React.FC<SnapshotHistoryModalProps> = ({
                     {snap.version}
                   </span>
                   {idx === 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
-                      LIVE HIỆN TẠI
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold font-sans bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
+                      Live hiện tại
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">
+                <span className="text-xs font-sans text-slate-400">
                   {snap.createdAt}
                 </span>
               </div>
@@ -133,7 +133,7 @@ export const SnapshotHistoryModal: React.FC<SnapshotHistoryModalProps> = ({
               </p>
 
               {/* SHA-256 Hash pill */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/[0.04] text-[10px] font-mono">
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/[0.04] text-xs font-mono">
                 <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-400 truncate max-w-[320px]">
                   <span className="text-teal-600 dark:text-teal-400 font-semibold">SHA:</span>
                   <span className="truncate">{snap.hash}</span>
@@ -157,7 +157,7 @@ export const SnapshotHistoryModal: React.FC<SnapshotHistoryModalProps> = ({
                     <button
                       type="button"
                       onClick={() => onRestoreSnapshot(snap)}
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold font-sans text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
                     >
                       <RotateCcw className="h-2.5 w-2.5" />
                       <span>Khôi phục</span>
