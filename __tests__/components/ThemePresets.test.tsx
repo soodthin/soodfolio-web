@@ -426,5 +426,112 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
       const summarySection = container.querySelector('#summary');
       expect(summarySection?.className).toContain('text-center');
     });
+
+    it('renders distinct layout and styling elements for Terminal Matrix', () => {
+      const { container } = render(
+        <VerticalStackDeck
+          data={mockPortfolio}
+          variant="terminal-matrix"
+        />
+      );
+
+      // Main element has font-mono
+      const mainEl = container.querySelector('main[data-theme-preset="terminal-matrix"]');
+      expect(mainEl?.className).toContain('font-mono');
+      expect((mainEl as HTMLElement).style.backgroundColor).toBe('rgb(5, 8, 10)'); // #05080A
+
+      // Terminal CLI banners exist
+      expect(screen.getByText(/soodfolio@production:~\$ init/)).toBeDefined();
+      expect(screen.getByText(/\$ git show project-01 --stat/)).toBeDefined();
+    });
+
+    it('renders distinct editorial rhythm and typography for Editorial Clean', () => {
+      const { container } = render(
+        <VerticalStackDeck
+          data={mockPortfolio}
+          variant="editorial-clean"
+        />
+      );
+
+      // Main element has Warm Charcoal background (#121110)
+      const mainEl = container.querySelector('main[data-theme-preset="editorial-clean"]');
+      expect((mainEl as HTMLElement).style.backgroundColor).toBe('rgb(18, 17, 16)'); // #121110
+
+      // Editorial monograph markers
+      expect(screen.getByText(/Volume 2026 · Curated Monograph/)).toBeDefined();
+      expect(screen.getByText(/Feature Story · Project 01/)).toBeDefined();
+    });
+
+    it('renders distinct full-width showcase layout for Spotlight Focus', () => {
+      const { container } = render(
+        <VerticalStackDeck
+          data={mockPortfolio}
+          variant="spotlight-focus"
+        />
+      );
+
+      // Main element has Deep Navy background (#0B0F19)
+      const mainEl = container.querySelector('main[data-theme-preset="spotlight-focus"]');
+      expect((mainEl as HTMLElement).style.backgroundColor).toBe('rgb(11, 15, 25)'); // #0B0F19
+
+      // Project 01 has full-width flex container
+      const project01 = container.querySelector('#project-01');
+      expect(project01?.className).toContain('flex flex-col gap-8 w-full');
+    });
+  });
+
+  describe('PresentationStage Layout & Token Distinction Tests', () => {
+    it('applies preset background on outer viewport in dark mode', () => {
+      const { container } = render(
+        <PresentationStage
+          portfolio={mockPortfolio}
+          activeSlide="cover"
+          zoom="fit"
+          stageTheme="dark"
+          viewportMode="16:9"
+          isFullscreen={false}
+          variant="terminal-matrix"
+        />
+      );
+
+      const viewportContainer = container.querySelector('.custom-scrollbar');
+      expect((viewportContainer as HTMLElement).style.backgroundColor).toBe('rgb(5, 8, 10)'); // #05080A
+    });
+
+    it('renders 1-column project grid in Spotlight Focus on Slide 02', () => {
+      const { container } = render(
+        <PresentationStage
+          portfolio={mockPortfolio}
+          activeSlide="projects"
+          zoom="fit"
+          stageTheme="dark"
+          viewportMode="16:9"
+          isFullscreen={false}
+          variant="spotlight-focus"
+        />
+      );
+
+      const projectGrid = container.querySelector('.grid');
+      expect(projectGrid?.className).toContain('grid-cols-1');
+      expect(projectGrid?.className).not.toContain('md:grid-cols-2');
+    });
+
+    it('renders terminal command prompts in Terminal Matrix on Slide 02', () => {
+      render(
+        <PresentationStage
+          portfolio={mockPortfolio}
+          activeSlide="projects"
+          zoom="fit"
+          stageTheme="dark"
+          viewportMode="16:9"
+          isFullscreen={false}
+          variant="terminal-matrix"
+        />
+      );
+
+      expect(screen.getByText('> projects --selected')).toBeDefined();
+      expect(screen.getByText('> proj_01')).toBeDefined();
+    });
   });
 });
+

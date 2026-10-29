@@ -198,11 +198,14 @@ const SKILL_CONTEXTS: Record<string, { type: 'exp' | 'project' | 'edu' | 'tool';
   ],
 };
 
-function SkillWithContext({ name }: { name: string }) {
+function SkillWithContext({ name, accentColor }: { name: string; accentColor?: string }) {
   const contexts = SKILL_CONTEXTS[name] || [];
   return (
     <span className="relative group/skill inline-block cursor-pointer">
-      <span className="hover:text-teal-600 dark:hover:text-[#2dd4bf] underline decoration-dotted decoration-slate-400/50 hover:decoration-teal-600 dark:hover:decoration-[#2dd4bf] underline-offset-4 transition-colors">
+      <span
+        className="underline decoration-dotted underline-offset-4 transition-colors hover:opacity-80"
+        style={{ textDecorationColor: accentColor ? `${accentColor}80` : 'rgba(148, 163, 184, 0.5)' }}
+      >
         {name}
       </span>
       {contexts.length > 0 && (
@@ -212,7 +215,10 @@ function SkillWithContext({ name }: { name: string }) {
           </span>
           {contexts.map((c) => (
             <span key={c.label} className="flex items-center gap-1.5 text-slate-200">
-              <span className="text-teal-600 dark:text-[#2dd4bf] text-xs font-semibold">
+              <span
+                className="text-xs font-semibold"
+                style={{ color: accentColor || 'var(--accent-primary)' }}
+              >
                 {c.type === 'exp' ? 'Kinh nghiệm' : c.type === 'project' ? 'Dự án' : 'Ứng dụng'} •
               </span>
               <span className="font-medium">{c.label}</span>
@@ -430,16 +436,33 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
   return (
     <main
       data-theme-preset={activePresetKey}
-      style={{ fontFamily: activePreset.fontVar }}
-      className="relative min-h-screen bg-[#f8fafc] dark:bg-[#080d12] text-slate-800 dark:text-slate-100 selection:bg-teal-500/30 selection:text-white font-sans antialiased transition-colors duration-200"
+      style={{
+        fontFamily: activePreset.fontVar,
+        backgroundColor: theme === 'dark' ? activePreset.bgHex : undefined,
+        ['--accent-primary' as any]: activePreset.accentHex,
+        ['--accent-muted' as any]: activePreset.accentMutedHex,
+        ['--bg-canvas' as any]: activePreset.bgHex,
+        ['--surface-card' as any]: activePreset.surfaceHex,
+      }}
+      className={`relative min-h-screen bg-[#f8fafc] text-slate-800 dark:text-slate-100 selection:bg-teal-500/30 selection:text-white antialiased transition-colors duration-200 ${
+        isTerminal ? 'font-mono' : ''
+      }`}
     >
       {/* ========================================================================= */}
       {/* EDITORIAL FLOATING HEADER                                                 */}
       {/* ========================================================================= */}
-      <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-12 py-3.5 flex items-center justify-between backdrop-blur-md bg-[#f8fafc]/90 dark:bg-[#080d12]/85 border-b border-[#e2e8f0] dark:border-white/[0.07] transition-colors duration-200">
+      <header
+        className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-12 py-3.5 flex items-center justify-between backdrop-blur-md bg-[#f8fafc]/90 border-b border-[#e2e8f0] dark:border-white/[0.07] transition-colors duration-200"
+        style={{
+          backgroundColor: theme === 'dark' ? `${activePreset.bgHex}e6` : undefined,
+        }}
+      >
         {/* Left: Identity Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="h-2 w-2 rounded-full bg-teal-500 dark:bg-[#2dd4bf]" />
+          <div
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: activePreset.accentHex }}
+          />
           <span className="font-sans text-xs text-slate-950 dark:text-white font-bold">
             {data.title || 'Thai Do Thinh'}
           </span>
@@ -458,7 +481,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             className="px-2.5 py-1.5 rounded-lg bg-[#f1f5f9] hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 font-sans text-xs font-bold"
             title={t.header.langTooltip}
           >
-            <Globe className="h-3.5 w-3.5 text-teal-600 dark:text-[#2dd4bf]" />
+            <Globe className="h-3.5 w-3.5" style={{ color: activePreset.accentHex }} />
             <span>{lang.toUpperCase()}</span>
           </button>
 
@@ -470,7 +493,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             title={theme === 'dark' ? t.header.lightTooltip : t.header.darkTooltip}
           >
             {theme === 'dark' ? (
-              <Sun className="h-4 w-4 text-[#2dd4bf]" />
+              <Sun className="h-4 w-4" style={{ color: activePreset.accentHex }} />
             ) : (
               <Moon className="h-4 w-4 text-slate-700" />
             )}
@@ -500,7 +523,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             {isMuted ? (
               <VolumeX className="h-4 w-4 text-slate-400" />
             ) : (
-              <Volume2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf]" />
+              <Volume2 className="h-4 w-4" style={{ color: activePreset.accentHex }} />
             )}
           </button>
 
@@ -512,7 +535,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
-              <Minimize2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf]" />
+              <Minimize2 className="h-4 w-4" style={{ color: activePreset.accentHex }} />
             ) : (
               <Maximize2 className="h-4 w-4" />
             )}
@@ -522,7 +545,11 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
           <button
             type="button"
             onClick={() => scrollToSection('contact')}
-            className="ml-1 px-4 py-1.5 rounded-lg bg-teal-600 dark:bg-[#2dd4bf] hover:bg-teal-700 dark:hover:bg-teal-300 text-white dark:text-[#080d12] font-sans font-semibold text-xs transition-colors cursor-pointer active:scale-95"
+            style={{
+              backgroundColor: activePreset.accentHex,
+              color: activePresetKey === 'editorial-clean' ? '#121110' : '#080d12',
+            }}
+            className="ml-1 px-4 py-1.5 rounded-lg hover:opacity-90 font-sans font-semibold text-xs transition-opacity cursor-pointer active:scale-95"
           >
             {t.header.contactBtn}
           </button>
@@ -549,18 +576,27 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
               <span
                 className={`font-sans text-xs transition-all duration-200 ${
                   isActive
-                    ? 'text-teal-600 dark:text-[#2dd4bf] font-semibold opacity-100 translate-x-0'
+                    ? 'font-semibold opacity-100 translate-x-0'
                     : 'text-slate-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 group-hover:text-slate-700 dark:group-hover:text-slate-300 translate-x-1 group-hover:translate-x-0'
                 }`}
+                style={isActive ? { color: activePreset.accentHex } : undefined}
               >
                 {item.label}
               </span>
               <span
                 className={`block rounded-full transition-all duration-200 ${
                   isActive
-                    ? 'w-2 h-2 bg-teal-500 dark:bg-[#2dd4bf] shadow-[0_0_8px_rgba(20,184,166,0.6)] dark:shadow-[0_0_8px_rgba(45,212,191,0.7)]'
+                    ? 'w-2 h-2'
                     : 'w-1.5 h-1.5 bg-slate-300 dark:bg-white/20 group-hover:bg-slate-400 dark:group-hover:bg-white/50'
                 }`}
+                style={
+                  isActive
+                    ? {
+                        backgroundColor: activePreset.accentHex,
+                        boxShadow: `0 0 8px ${activePreset.accentHex}99`,
+                      }
+                    : undefined
+                }
               />
             </button>
           );
@@ -583,8 +619,25 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
           <div className={`flex flex-wrap items-center ${isSpotlight ? 'justify-center' : ''} gap-3 sm:gap-4 text-xs font-mono transition-opacity duration-500 ${
             activeIdx > 0 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
           }`}>
+            {isTerminal && (
+              <div className="flex items-center gap-2 px-3 py-1 rounded border border-emerald-500/20 bg-emerald-950/20 font-mono text-xs text-emerald-400">
+                <Terminal className="h-3.5 w-3.5 shrink-0" />
+                <span>soodfolio@production:~$ init --profile active</span>
+              </div>
+            )}
+            {isEditorial && (
+              <div className="font-mono text-[11px] uppercase tracking-widest text-amber-500/90 font-semibold">
+                Volume 2026 · Curated Monograph
+              </div>
+            )}
             <span className="inline-flex items-center gap-2 text-slate-800 dark:text-slate-200 font-medium">
-              <span className="h-2 w-2 rounded-full bg-teal-500 dark:bg-[#2dd4bf] shadow-[0_0_8px_rgba(20,184,166,0.6)] animate-pulse" />
+              <span
+                className="h-2 w-2 rounded-full animate-pulse"
+                style={{
+                  backgroundColor: activePreset.accentHex,
+                  boxShadow: `0 0 8px ${activePreset.accentHex}99`,
+                }}
+              />
               {t.hero.available}
             </span>
             <span className="text-slate-400 dark:text-slate-600">·</span>
@@ -610,14 +663,24 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
               </h1>
 
               {/* Title Line */}
-              <p className="text-sm sm:text-base lg:text-lg font-sans text-teal-600 dark:text-[#2dd4bf] font-medium pt-1">
+              <p
+                className="text-sm sm:text-base lg:text-lg font-sans font-medium pt-1"
+                style={{ color: activePreset.accentHex }}
+              >
                 {lang === 'vi' ? t.hero.tagline : (data.tagline ? data.tagline.replace(/\s*\/\/\s*/g, ' · ') : t.hero.tagline)}
               </p>
             </div>
 
             {/* Right Column: Circular Avatar */}
             <div className={`flex justify-center ${isSpotlight ? 'order-1 sm:order-2' : 'min-[820px]:justify-end'} items-center`}>
-              <div className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 aspect-square overflow-hidden rounded-full bg-teal-50 dark:bg-[#0d131a] border-4 border-teal-500 dark:border-[#2dd4bf] ring-4 ring-teal-500/20 dark:ring-[#2dd4bf]/25 shadow-[0_12px_40px_rgba(13,148,136,0.25)] dark:shadow-[0_0_35px_rgba(45,212,191,0.3)] transition-all">
+              <div
+                className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 aspect-square overflow-hidden rounded-full border-4 shadow-xl transition-all"
+                style={{
+                  backgroundColor: theme === 'dark' ? activePreset.surfaceHex : '#f0fdf4',
+                  borderColor: activePreset.accentHex,
+                  boxShadow: `0 0 35px ${activePreset.accentHex}40`,
+                }}
+              >
                 <img
                   src={userAvatar}
                   alt={data.title || 'Thai Do Thinh'}
@@ -683,8 +746,11 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             activeIdx > 1 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
           }`}>
             <div>
-              <span className="text-teal-600 dark:text-[#2dd4bf] font-sans text-xs block mb-1 font-semibold">
-                {t.experience.eyebrow}
+              <span
+                className="font-sans text-xs block mb-1 font-semibold"
+                style={{ color: activePreset.accentHex }}
+              >
+                {isTerminal ? `> ${t.experience.eyebrow}` : isEditorial ? `CHRONICLE · ${t.experience.eyebrow}` : t.experience.eyebrow}
               </span>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-950 dark:text-white">
                 {t.experience.title}
@@ -696,7 +762,8 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
           <div className="relative pl-7 sm:pl-10 lg:pl-12 space-y-10 sm:space-y-12">
             {/* Continuous Vertical Career Lifecycle Spine */}
             <div 
-              className="absolute left-[11px] sm:left-[15px] lg:left-[19px] top-3 bottom-6 w-[2px] bg-teal-500/25 dark:bg-teal-400/20 pointer-events-none" 
+              className="absolute left-[11px] sm:left-[15px] lg:left-[19px] top-3 bottom-6 w-[2px] pointer-events-none" 
+              style={{ backgroundColor: `${activePreset.accentHex}33` }}
               aria-hidden="true"
             />
 
@@ -704,26 +771,52 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             <div className="relative space-y-3">
               {/* Timeline Node Marker 01 */}
               <div className="absolute -left-[26px] sm:-left-[34px] lg:-left-[38px] top-1 flex items-center justify-center pointer-events-none" aria-hidden="true">
-                <div className="w-5 h-5 rounded-full bg-[#ffffff] dark:bg-[#0d131a] border-2 border-teal-500 dark:border-[#2dd4bf] flex items-center justify-center shadow-[0_0_10px_rgba(20,184,166,0.35)] dark:shadow-[0_0_10px_rgba(45,212,191,0.3)]">
-                  <div className="w-1.5 h-1.5 rounded-full bg-teal-600 dark:bg-[#2dd4bf] animate-pulse" />
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center border-2"
+                  style={{
+                    backgroundColor: theme === 'dark' ? activePreset.surfaceHex : '#ffffff',
+                    borderColor: activePreset.accentHex,
+                    boxShadow: `0 0 10px ${activePreset.accentHex}40`,
+                  }}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full animate-pulse"
+                    style={{ backgroundColor: activePreset.accentHex }}
+                  />
                 </div>
               </div>
 
               {/* Milestone Header */}
-              <div className="flex items-center gap-2 font-mono text-xs text-teal-600 dark:text-[#2dd4bf] font-bold">
+              <div
+                className="flex items-center gap-2 font-mono text-xs font-bold"
+                style={{ color: activePreset.accentHex }}
+              >
                 <span>01</span>
                 <span className="text-slate-400 dark:text-slate-600">·</span>
-                <span>{t.experience.tag1}</span>
+                <span>{isTerminal ? `exec_log.${t.experience.tag1.toLowerCase()}` : t.experience.tag1}</span>
                 <span className="text-slate-400 dark:text-slate-600">·</span>
                 <span className="text-slate-500 dark:text-slate-400 font-normal">{t.experience.period1}</span>
               </div>
 
               {/* Minimalist Corporate Experience Card */}
-              <div className="p-6 sm:p-8 rounded-2xl border border-[#e2e8f0] dark:border-white/[0.07] bg-white/95 dark:bg-[#0d131a]/90 dark:backdrop-blur-sm space-y-6 shadow-[0_2px_12px_rgba(15,23,42,0.06)] dark:shadow-xl">
+              <div
+                className="p-6 sm:p-8 rounded-2xl border border-[#e2e8f0] dark:border-white/[0.07] bg-white/95 dark:backdrop-blur-sm space-y-6 shadow-[0_2px_12px_rgba(15,23,42,0.06)] dark:shadow-xl"
+                style={{
+                  backgroundColor: theme === 'dark' ? activePreset.surfaceHex : undefined,
+                  borderColor: isTerminal ? `${activePreset.accentHex}33` : isEditorial ? 'rgba(245, 158, 11, 0.2)' : undefined,
+                }}
+              >
             {/* Header: Role, Company, Period */}
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-6 border-b border-[#e2e8f0] dark:border-white/10">
               <div className="space-y-1">
-                <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-teal-500/10 dark:bg-[#2dd4bf]/12 text-teal-600 dark:text-[#2dd4bf] border border-[#0d9488]/20 dark:border-[#2dd4bf]/25">
+                <div
+                  className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold border"
+                  style={{
+                    backgroundColor: activePreset.accentMutedHex,
+                    color: activePreset.accentHex,
+                    borderColor: `${activePreset.accentHex}33`,
+                  }}
+                >
                   <Building2 className="h-3 w-3" />
                   <span>BW Industrial Development JSC</span>
                 </div>
@@ -752,13 +845,16 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
 
             {/* 4 Clean High-Signal Engineering Accomplishments */}
             <div className="space-y-3 pt-1">
-              <div className="text-xs font-sans font-semibold text-teal-600 dark:text-[#2dd4bf]">
+              <div
+                className="text-xs font-sans font-semibold"
+                style={{ color: activePreset.accentHex }}
+              >
                 {t.experience.deliverablesHeader}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-sans text-xs sm:text-sm">
                 <div className="p-4 rounded-xl bg-[#ffffff] dark:bg-white/[0.02] border border-[#e2e8f0]/80 dark:border-white/10 space-y-1.5">
                   <div className="flex items-center gap-2 font-bold text-slate-950 dark:text-white font-mono text-xs">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: activePreset.accentHex }} />
                     <span>Bank Statement Parsing (10+ Banks)</span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
@@ -768,7 +864,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
 
                 <div className="p-4 rounded-xl bg-[#ffffff] dark:bg-white/[0.02] border border-[#e2e8f0]/80 dark:border-white/10 space-y-1.5">
                   <div className="flex items-center gap-2 font-bold text-slate-950 dark:text-white font-mono text-xs">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: activePreset.accentHex }} />
                     <span>Cash Report Automation (1 Day → 2 Hrs)</span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
@@ -778,7 +874,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
 
                 <div className="p-4 rounded-xl bg-[#ffffff] dark:bg-white/[0.02] border border-[#e2e8f0]/80 dark:border-white/10 space-y-1.5">
                   <div className="flex items-center gap-2 font-bold text-slate-950 dark:text-white font-mono text-xs">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: activePreset.accentHex }} />
                     <span>Enterprise Security & Access Control</span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
@@ -788,7 +884,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
 
                 <div className="p-4 rounded-xl bg-[#ffffff] dark:bg-white/[0.02] border border-[#e2e8f0]/80 dark:border-white/10 space-y-1.5">
                   <div className="flex items-center gap-2 font-bold text-slate-950 dark:text-white font-mono text-xs">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: activePreset.accentHex }} />
                     <span>Real-time Status Tracking & Monitoring</span>
                   </div>
                   <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
@@ -815,24 +911,45 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             <div className="relative space-y-3">
               {/* Timeline Node Marker 02 */}
               <div className="absolute -left-[26px] sm:-left-[34px] lg:-left-[38px] top-1 flex items-center justify-center pointer-events-none" aria-hidden="true">
-                <div className="w-5 h-5 rounded-full bg-[#ffffff] dark:bg-[#0d131a] border-2 border-teal-500 dark:border-[#2dd4bf] flex items-center justify-center shadow-[0_0_10px_rgba(20,184,166,0.35)] dark:shadow-[0_0_10px_rgba(45,212,191,0.3)]">
-                  <div className="w-1.5 h-1.5 rounded-full bg-teal-600 dark:bg-[#2dd4bf]" />
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center border-2"
+                  style={{
+                    backgroundColor: theme === 'dark' ? activePreset.surfaceHex : '#ffffff',
+                    borderColor: activePreset.accentHex,
+                    boxShadow: `0 0 10px ${activePreset.accentHex}40`,
+                  }}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full animate-pulse"
+                    style={{ backgroundColor: activePreset.accentHex }}
+                  />
                 </div>
               </div>
 
               {/* Milestone Header */}
-              <div className="flex items-center gap-2 font-mono text-xs text-teal-600 dark:text-[#2dd4bf] font-bold">
+              <div
+                className="flex items-center gap-2 font-mono text-xs font-bold"
+                style={{ color: activePreset.accentHex }}
+              >
                 <span>02</span>
                 <span className="text-slate-400 dark:text-slate-600">·</span>
-                <span>{t.experience.eduTag}</span>
+                <span>{isTerminal ? `edu_log.${t.experience.eduTag.toLowerCase()}` : t.experience.eduTag}</span>
                 <span className="text-slate-400 dark:text-slate-600">·</span>
                 <span className="text-slate-500 dark:text-slate-400 font-normal">{t.experience.eduPeriod}</span>
               </div>
 
               {/* Academic Foundation: Minimalist Clean Row */}
-              <div className="p-6 rounded-2xl border border-[#e2e8f0] dark:border-white/10 bg-white dark:bg-white/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono">
+              <div
+                className="p-6 rounded-2xl border border-[#e2e8f0] dark:border-white/10 bg-white dark:bg-white/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono"
+                style={{
+                  backgroundColor: theme === 'dark' ? activePreset.surfaceHex : undefined,
+                }}
+              >
             <div>
-              <div className="text-xs text-teal-600 dark:text-[#2dd4bf] font-semibold font-sans flex items-center gap-2">
+              <div
+                className="text-xs font-semibold font-sans flex items-center gap-2"
+                style={{ color: activePreset.accentHex }}
+              >
                 <Award className="h-3.5 w-3.5" />
                 <span>Education</span>
               </div>
@@ -860,8 +977,11 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             activeIdx > 2 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
           }`}>
             <div>
-              <span className="text-teal-600 dark:text-[#2dd4bf] font-sans text-xs font-semibold block mb-1">
-                {t.works.eyebrow}
+              <span
+                className="font-sans text-xs font-semibold block mb-1"
+                style={{ color: activePreset.accentHex }}
+              >
+                {isTerminal ? `> ${t.works.eyebrow}` : isEditorial ? `PORTFOLIO · ${t.works.eyebrow}` : t.works.eyebrow}
               </span>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white">
                 {t.works.title}
@@ -873,24 +993,54 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
           <div className="relative pl-7 sm:pl-10 lg:pl-12 space-y-24 sm:space-y-32">
             {/* Continuous Vertical Architecture Spine */}
             <div 
-              className="absolute left-[11px] sm:left-[15px] lg:left-[19px] top-2 bottom-8 w-[2px] bg-teal-500/25 dark:bg-teal-400/20 pointer-events-none" 
+              className="absolute left-[11px] sm:left-[15px] lg:left-[19px] top-2 bottom-8 w-[2px] pointer-events-none" 
+              style={{ backgroundColor: `${activePreset.accentHex}33` }}
               aria-hidden="true"
             />
 
             {/* PROJECT 01: FlexiConnect Web */}
             <div 
               id="project-01" 
-              className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch"
+              className={`relative ${
+                isSpotlight 
+                  ? 'flex flex-col gap-8 w-full p-6 sm:p-8 rounded-3xl border border-white/[0.08] backdrop-blur-sm shadow-xl' 
+                  : 'grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch'
+              }`}
+              style={isSpotlight && theme === 'dark' ? { backgroundColor: activePreset.surfaceHex } : undefined}
             >
               {/* Spine Node Marker 01 */}
               <div className="absolute -left-[26px] sm:-left-[34px] lg:-left-[38px] top-12 flex items-center justify-center pointer-events-none" aria-hidden="true">
-                <div className="w-5 h-5 rounded-full bg-[#ffffff] dark:bg-[#0d131a] border-2 border-teal-500 dark:border-[#2dd4bf] flex items-center justify-center shadow-[0_0_10px_rgba(20,184,166,0.35)] dark:shadow-[0_0_10px_rgba(45,212,191,0.3)]">
-                  <div className="w-1.5 h-1.5 rounded-full bg-teal-600 dark:bg-[#2dd4bf] animate-pulse" />
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center border-2"
+                  style={{
+                    backgroundColor: theme === 'dark' ? activePreset.surfaceHex : '#ffffff',
+                    borderColor: activePreset.accentHex,
+                    boxShadow: `0 0 10px ${activePreset.accentHex}40`,
+                  }}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full animate-pulse"
+                    style={{ backgroundColor: activePreset.accentHex }}
+                  />
                 </div>
               </div>
               {/* LEFT: Content */}
-              <div className="lg:col-span-7 flex flex-col justify-between space-y-5 h-full">
-                <div className="flex items-center gap-2 font-mono text-xs text-teal-600 dark:text-[#2dd4bf] font-bold">
+              <div className={isSpotlight ? 'w-full space-y-5' : 'lg:col-span-7 flex flex-col justify-between space-y-5 h-full'}>
+                {isTerminal && (
+                  <div className="flex items-center gap-2 font-mono text-xs text-emerald-400">
+                    <Terminal className="h-3.5 w-3.5 shrink-0" />
+                    <span>$ git show project-01 --stat</span>
+                  </div>
+                )}
+                {isEditorial && (
+                  <div className="font-mono text-[11px] uppercase tracking-widest text-amber-500 font-semibold">
+                    Feature Story · Project 01
+                  </div>
+                )}
+                <div
+                  className="flex items-center gap-2 font-mono text-xs font-bold"
+                  style={{ color: activePreset.accentHex }}
+                >
                   <span>01</span>
                   <span className="text-slate-400 dark:text-slate-600">·</span>
                   <span>{t.works.p1Tag}</span>
@@ -904,10 +1054,13 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                     href="https://github.com/soodthin/FlexiConnect"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
+                    className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:opacity-80 transition-opacity"
                   >
                     <span>FlexiConnect Web</span>
-                    <ArrowUpRight className="h-6 w-6 sm:h-7 sm:w-7 text-teal-600 dark:text-[#2dd4bf] group-hover/title:translate-x-1 group-hover/title:-translate-y-1 transition-transform" />
+                    <ArrowUpRight
+                      className="h-6 w-6 sm:h-7 sm:w-7 transition-transform group-hover/title:translate-x-1 group-hover/title:-translate-y-1"
+                      style={{ color: activePreset.accentHex }}
+                    />
                   </a>
                   <div className="text-sm sm:text-base font-mono text-slate-600 dark:text-slate-300 font-medium pt-0.5">
                     {t.works.p1Role}
@@ -921,22 +1074,22 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                 {/* Exactly 3 Key Highlights */}
                 <div className="space-y-2 pt-1 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-200">
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">{t.works.p1H1Title}</strong> {t.works.p1H1Text}</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">{t.works.p1H2Title}</strong> {t.works.p1H2Text}</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">{t.works.p1H3Title}</strong> {t.works.p1H3Text}</span>
                   </div>
                 </div>
               </div>
 
               {/* RIGHT: Tech Stack & Image Stack */}
-              <div className="lg:col-span-5 flex flex-col justify-between items-start h-full space-y-4">
+              <div className={isSpotlight ? 'w-full max-w-4xl mx-auto space-y-4 pt-2' : 'lg:col-span-5 flex flex-col justify-between items-start h-full space-y-4'}>
                 <div className="w-full space-y-3">
                   <div className="text-xs font-mono text-slate-700 dark:text-slate-400">
                     <strong className="text-slate-950 dark:text-white font-semibold font-sans block mb-1">{t.works.techStackLabel}</strong>
@@ -953,17 +1106,46 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             {/* PROJECT 02: Food Delivery & Restaurant App */}
             <div 
               id="project-02" 
-              className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch"
+              className={`relative ${
+                isSpotlight 
+                  ? 'flex flex-col gap-8 w-full p-6 sm:p-8 rounded-3xl border border-white/[0.08] backdrop-blur-sm shadow-xl' 
+                  : 'grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch'
+              }`}
+              style={isSpotlight && theme === 'dark' ? { backgroundColor: activePreset.surfaceHex } : undefined}
             >
               {/* Spine Node Marker 02 */}
               <div className="absolute -left-[26px] sm:-left-[34px] lg:-left-[38px] top-12 flex items-center justify-center pointer-events-none" aria-hidden="true">
-                <div className="w-5 h-5 rounded-full bg-[#ffffff] dark:bg-[#0d131a] border-2 border-teal-500 dark:border-[#2dd4bf] flex items-center justify-center shadow-[0_0_10px_rgba(20,184,166,0.35)] dark:shadow-[0_0_10px_rgba(45,212,191,0.3)]">
-                  <div className="w-1.5 h-1.5 rounded-full bg-teal-600 dark:bg-[#2dd4bf] animate-pulse" />
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center border-2"
+                  style={{
+                    backgroundColor: theme === 'dark' ? activePreset.surfaceHex : '#ffffff',
+                    borderColor: activePreset.accentHex,
+                    boxShadow: `0 0 10px ${activePreset.accentHex}40`,
+                  }}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full animate-pulse"
+                    style={{ backgroundColor: activePreset.accentHex }}
+                  />
                 </div>
               </div>
-              {/* LEFT: Content */}
-              <div className="lg:col-span-7 flex flex-col justify-between space-y-5 h-full">
-                <div className="flex items-center gap-2 font-mono text-xs text-teal-600 dark:text-[#2dd4bf] font-bold">
+              {/* Content Column (In Editorial: alternates to right side) */}
+              <div className={isSpotlight ? 'w-full space-y-5' : isEditorial ? 'lg:col-span-7 lg:order-2 flex flex-col justify-between space-y-5 h-full' : 'lg:col-span-7 flex flex-col justify-between space-y-5 h-full'}>
+                {isTerminal && (
+                  <div className="flex items-center gap-2 font-mono text-xs text-emerald-400">
+                    <Terminal className="h-3.5 w-3.5 shrink-0" />
+                    <span>$ git show project-02 --stat</span>
+                  </div>
+                )}
+                {isEditorial && (
+                  <div className="font-mono text-[11px] uppercase tracking-widest text-amber-500 font-semibold">
+                    Case Study · Project 02
+                  </div>
+                )}
+                <div
+                  className="flex items-center gap-2 font-mono text-xs font-bold"
+                  style={{ color: activePreset.accentHex }}
+                >
                   <span>02</span>
                   <span className="text-slate-400 dark:text-slate-600">·</span>
                   <span>{t.works.p2Tag}</span>
@@ -977,10 +1159,13 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                     href="https://github.com/soodthin/T-Restaurant-App"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
+                    className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:opacity-80 transition-opacity"
                   >
                     <span>Food Delivery & Restaurant App</span>
-                    <ArrowUpRight className="h-6 w-6 sm:h-7 sm:w-7 text-teal-600 dark:text-[#2dd4bf] group-hover/title:translate-x-1 group-hover/title:-translate-y-1 transition-transform" />
+                    <ArrowUpRight
+                      className="h-6 w-6 sm:h-7 sm:w-7 transition-transform group-hover/title:translate-x-1 group-hover/title:-translate-y-1"
+                      style={{ color: activePreset.accentHex }}
+                    />
                   </a>
                   <div className="text-sm sm:text-base font-mono text-slate-600 dark:text-slate-300 font-medium pt-0.5">
                     {t.works.p2Role}
@@ -994,22 +1179,22 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                 {/* Exactly 3 Key Highlights */}
                 <div className="space-y-2 pt-1 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-200">
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">Django REST Framework:</strong> Built complete REST APIs covering dynamic menus, table reservations, order lifecycle, and customer reviews.</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">{t.works.p2H2Title}</strong> {t.works.p2H2Text}</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">React Native & Expo:</strong> Built mobile interfaces with dual-role flows for customers and chefs, plus real-time in-app chat via Firebase.</span>
                   </div>
                 </div>
               </div>
 
-              {/* RIGHT: Tech Stack & Image Stack */}
-              <div className="lg:col-span-5 flex flex-col justify-between items-start h-full space-y-4">
+              {/* Media Column (In Editorial: alternates to left side) */}
+              <div className={isSpotlight ? 'w-full max-w-4xl mx-auto space-y-4 pt-2' : isEditorial ? 'lg:col-span-5 lg:order-1 flex flex-col justify-between items-start h-full space-y-4' : 'lg:col-span-5 flex flex-col justify-between items-start h-full space-y-4'}>
                 <div className="w-full space-y-3">
                   <div className="text-xs font-mono text-slate-700 dark:text-slate-400">
                     <strong className="text-slate-950 dark:text-white font-semibold font-sans block mb-1">{t.works.techStackLabel}</strong>
@@ -1026,17 +1211,46 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             {/* PROJECT 03: Dev Portfolio Engine */}
             <div 
               id="project-03" 
-              className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch"
+              className={`relative ${
+                isSpotlight 
+                  ? 'flex flex-col gap-8 w-full p-6 sm:p-8 rounded-3xl border border-white/[0.08] backdrop-blur-sm shadow-xl' 
+                  : 'grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch'
+              }`}
+              style={isSpotlight && theme === 'dark' ? { backgroundColor: activePreset.surfaceHex } : undefined}
             >
               {/* Spine Node Marker 03 */}
               <div className="absolute -left-[26px] sm:-left-[34px] lg:-left-[38px] top-12 flex items-center justify-center pointer-events-none" aria-hidden="true">
-                <div className="w-5 h-5 rounded-full bg-[#ffffff] dark:bg-[#0d131a] border-2 border-teal-500 dark:border-[#2dd4bf] flex items-center justify-center shadow-[0_0_10px_rgba(20,184,166,0.35)] dark:shadow-[0_0_10px_rgba(45,212,191,0.3)]">
-                  <div className="w-1.5 h-1.5 rounded-full bg-teal-600 dark:bg-[#2dd4bf] animate-pulse" />
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center border-2"
+                  style={{
+                    backgroundColor: theme === 'dark' ? activePreset.surfaceHex : '#ffffff',
+                    borderColor: activePreset.accentHex,
+                    boxShadow: `0 0 10px ${activePreset.accentHex}40`,
+                  }}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full animate-pulse"
+                    style={{ backgroundColor: activePreset.accentHex }}
+                  />
                 </div>
               </div>
               {/* LEFT: Content */}
-              <div className="lg:col-span-7 flex flex-col justify-between space-y-5 h-full">
-                <div className="flex items-center gap-2 font-mono text-xs text-teal-600 dark:text-[#2dd4bf] font-bold">
+              <div className={isSpotlight ? 'w-full space-y-5' : 'lg:col-span-7 flex flex-col justify-between space-y-5 h-full'}>
+                {isTerminal && (
+                  <div className="flex items-center gap-2 font-mono text-xs text-emerald-400">
+                    <Terminal className="h-3.5 w-3.5 shrink-0" />
+                    <span>$ git show project-03 --stat</span>
+                  </div>
+                )}
+                {isEditorial && (
+                  <div className="font-mono text-[11px] uppercase tracking-widest text-amber-500 font-semibold">
+                    Architectural Monograph · Project 03
+                  </div>
+                )}
+                <div
+                  className="flex items-center gap-2 font-mono text-xs font-bold"
+                  style={{ color: activePreset.accentHex }}
+                >
                   <span>03</span>
                   <span className="text-slate-400 dark:text-slate-600">·</span>
                   <span>Typographic Static Engine</span>
@@ -1051,10 +1265,13 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                       href="https://soodthin.github.io/dev-portfolio/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:text-teal-600 dark:hover:text-[#2dd4bf] transition-colors"
+                      className="group/title inline-flex items-center gap-2.5 text-2xl sm:text-4xl font-black text-slate-950 dark:text-white hover:opacity-80 transition-opacity"
                     >
                       <span>Dev Portfolio Engine</span>
-                      <ArrowUpRight className="h-6 w-6 sm:h-7 sm:w-7 text-teal-600 dark:text-[#2dd4bf] group-hover/title:translate-x-1 group-hover/title:-translate-y-1 transition-transform" />
+                      <ArrowUpRight
+                        className="h-6 w-6 sm:h-7 sm:w-7 transition-transform group-hover/title:translate-x-1 group-hover/title:-translate-y-1"
+                        style={{ color: activePreset.accentHex }}
+                      />
                     </a>
                     <a
                       href="https://github.com/soodthin/dev-portfolio"
@@ -1062,7 +1279,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-medium border border-slate-300 dark:border-white/15 bg-[#f1f5f9] hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer"
                     >
-                      <Code2 className="h-3.5 w-3.5 text-teal-600 dark:text-[#2dd4bf]" />
+                      <Code2 className="h-3.5 w-3.5" style={{ color: activePreset.accentHex }} />
                       <span>Source Code</span>
                       <ArrowUpRight className="h-3 w-3" />
                     </a>
@@ -1079,26 +1296,36 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                 {/* Exactly 3 Key Highlights */}
                 <div className="space-y-2 pt-1 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-200">
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">100% Static Export (SSG):</strong> Automated GitHub Actions pipeline building static assets with sub-50ms TTFB worldwide.</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">Pure 2D Typographic Design:</strong> Flat-layered vector design system with zero icon or emoji dependencies.</span>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-[#2dd4bf] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: activePreset.accentHex }} />
                     <span><strong className="text-slate-950 dark:text-white">Strict TypeScript Safety:</strong> End-to-end typed data contracts ensuring resilience across all component hierarchies.</span>
                   </div>
                 </div>
               </div>
 
               {/* RIGHT: Live Site Notice & Specs Card */}
-              <div className="lg:col-span-5 flex flex-col justify-between items-start h-full space-y-6">
+              <div className={isSpotlight ? 'w-full max-w-4xl mx-auto space-y-4 pt-2' : 'lg:col-span-5 flex flex-col justify-between items-start h-full space-y-6'}>
                 <div className="w-full space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-teal-500/10 dark:bg-[#2dd4bf]/12 text-teal-600 dark:text-[#2dd4bf] border border-[#0d9488]/20 dark:border-[#2dd4bf]/25">
-                      <span className="w-2 h-2 rounded-full bg-teal-600 dark:bg-[#2dd4bf] animate-pulse" />
+                    <div
+                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold border"
+                      style={{
+                        backgroundColor: activePreset.accentMutedHex,
+                        color: activePreset.accentHex,
+                        borderColor: `${activePreset.accentHex}33`,
+                      }}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full animate-pulse"
+                        style={{ backgroundColor: activePreset.accentHex }}
+                      />
                       <span>{t.works.p3LiveBadge}</span>
                     </div>
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
@@ -1112,7 +1339,12 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                     <span>Next.js 16 · TypeScript · Tailwind CSS v4 · GitHub Pages · GitHub Actions CI/CD</span>
                   </div>
 
-                  <div className="p-4 rounded-xl border border-[#e2e8f0] dark:border-white/10 bg-[#ffffff] dark:bg-white/[0.02] space-y-2 text-xs font-mono text-slate-600 dark:text-slate-300">
+                  <div
+                    className="p-4 rounded-xl border border-[#e2e8f0] dark:border-white/10 bg-[#ffffff] dark:bg-white/[0.02] space-y-2 text-xs font-mono text-slate-600 dark:text-slate-300"
+                    style={{
+                      backgroundColor: theme === 'dark' ? activePreset.surfaceHex : undefined,
+                    }}
+                  >
                     <div className="flex justify-between">
                       <span className="text-slate-400">Hosting:</span>
                       <span className="text-slate-950 dark:text-white font-semibold">GitHub Pages Edge CDN</span>
@@ -1123,7 +1355,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Type Coverage:</span>
-                      <span className="text-teal-600 dark:text-[#2dd4bf] font-semibold">100% Strict TypeScript</span>
+                      <span className="font-semibold" style={{ color: activePreset.accentHex }}>100% Strict TypeScript</span>
                     </div>
                   </div>
                 </div>
@@ -1136,14 +1368,15 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
         {/* SECTION 04: CAPABILITIES (WITH AMBIENT WATERMARK TECH SILHOUETTES)      */}
         {/* ======================================================================= */}
         <section id="skills" className="relative space-y-8 pt-6 overflow-hidden">
-          {/* Subtle Ambient Watermark SVGs in Background */}
-          
           {/* Section Header (Dims slightly when scrolled past to create depth) */}
           <div className={`relative z-10 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#e2e8f0] dark:border-white/10 transition-opacity duration-500 ${
             activeIdx > 3 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
           }`}>
-            <span className="text-teal-600 dark:text-[#2dd4bf] font-sans text-xs font-semibold">
-              Technical Capabilities
+            <span
+              className="font-sans text-xs font-semibold"
+              style={{ color: activePreset.accentHex }}
+            >
+              {isTerminal ? '> capabilities.json' : isEditorial ? 'COMPENDIUM · Technical Capabilities' : 'Technical Capabilities'}
             </span>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white text-left sm:text-right">
               Skills & Tooling
@@ -1154,17 +1387,27 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
           <div className="relative z-10 space-y-6 font-mono text-sm">
             {/* Row 1: Languages */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 py-4 border-b border-[#e2e8f0] dark:border-white/10 items-baseline backdrop-blur-[1px]">
-              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-semibold text-xs font-sans flex items-center gap-2.5">
-                <div className="p-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-500 flex items-center justify-center shrink-0">
+              <div
+                className="md:col-span-3 font-semibold text-xs font-sans flex items-center gap-2.5"
+                style={{ color: activePreset.accentHex }}
+              >
+                <div
+                  className="p-1 rounded-md border flex items-center justify-center shrink-0"
+                  style={{
+                    backgroundColor: activePreset.accentMutedHex,
+                    borderColor: `${activePreset.accentHex}33`,
+                    color: activePreset.accentHex,
+                  }}
+                >
                   <Code2 className="h-3.5 w-3.5" />
                 </div>
-                <span>Languages</span>
+                <span>{isTerminal ? '>_ Languages' : 'Languages'}</span>
               </div>
               <div className="md:col-span-9 text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed flex flex-wrap items-center gap-y-2">
                 {['JavaScript', 'TypeScript', 'Java', 'Python', 'C++'].map((skill, idx) => (
                   <React.Fragment key={skill}>
                     {idx > 0 && <span className="text-slate-400 dark:text-slate-600 px-1.5 select-none">·</span>}
-                    <SkillWithContext name={skill} />
+                    <SkillWithContext name={skill} accentColor={activePreset.accentHex} />
                   </React.Fragment>
                 ))}
               </div>
@@ -1172,17 +1415,27 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
 
             {/* Row 2: Frameworks */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 py-4 border-b border-[#e2e8f0] dark:border-white/10 items-baseline backdrop-blur-[1px]">
-              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-semibold text-xs font-sans flex items-center gap-2.5">
-                <div className="p-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-500 flex items-center justify-center shrink-0">
+              <div
+                className="md:col-span-3 font-semibold text-xs font-sans flex items-center gap-2.5"
+                style={{ color: activePreset.accentHex }}
+              >
+                <div
+                  className="p-1 rounded-md border flex items-center justify-center shrink-0"
+                  style={{
+                    backgroundColor: activePreset.accentMutedHex,
+                    borderColor: `${activePreset.accentHex}33`,
+                    color: activePreset.accentHex,
+                  }}
+                >
                   <Layers className="h-3.5 w-3.5" />
                 </div>
-                <span>Frameworks & Libraries</span>
+                <span>{isTerminal ? '>_ Frameworks' : 'Frameworks & Libraries'}</span>
               </div>
               <div className="md:col-span-9 text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed flex flex-wrap items-center gap-y-2">
                 {['ReactJS', 'Next.js', 'Spring Boot', 'FastAPI', 'Django', 'Tailwind CSS', 'RESTful API'].map((skill, idx) => (
                   <React.Fragment key={skill}>
                     {idx > 0 && <span className="text-slate-400 dark:text-slate-600 px-1.5 select-none">·</span>}
-                    <SkillWithContext name={skill} />
+                    <SkillWithContext name={skill} accentColor={activePreset.accentHex} />
                   </React.Fragment>
                 ))}
               </div>
@@ -1190,17 +1443,27 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
 
             {/* Row 3: Data & Cloud DevOps */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 py-4 border-b border-[#e2e8f0] dark:border-white/10 items-baseline backdrop-blur-[1px]">
-              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-semibold text-xs font-sans flex items-center gap-2.5">
-                <div className="p-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-500 flex items-center justify-center shrink-0">
+              <div
+                className="md:col-span-3 font-semibold text-xs font-sans flex items-center gap-2.5"
+                style={{ color: activePreset.accentHex }}
+              >
+                <div
+                  className="p-1 rounded-md border flex items-center justify-center shrink-0"
+                  style={{
+                    backgroundColor: activePreset.accentMutedHex,
+                    borderColor: `${activePreset.accentHex}33`,
+                    color: activePreset.accentHex,
+                  }}
+                >
                   <Database className="h-3.5 w-3.5" />
                 </div>
-                <span>Data & DevOps</span>
+                <span>{isTerminal ? '>_ Data & Ops' : 'Data & DevOps'}</span>
               </div>
               <div className="md:col-span-9 text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed flex flex-wrap items-center gap-y-2">
                 {['PostgreSQL', 'MySQL', 'Redis', 'Git', 'GitHub Actions', 'Postman', 'Render'].map((skill, idx) => (
                   <React.Fragment key={skill}>
                     {idx > 0 && <span className="text-slate-400 dark:text-slate-600 px-1.5 select-none">·</span>}
-                    <SkillWithContext name={skill} />
+                    <SkillWithContext name={skill} accentColor={activePreset.accentHex} />
                   </React.Fragment>
                 ))}
               </div>
@@ -1208,17 +1471,27 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
 
             {/* Row 4: AI Engineering */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 py-4 border-b border-[#e2e8f0] dark:border-white/10 items-baseline backdrop-blur-[1px]">
-              <div className="md:col-span-3 text-teal-600 dark:text-[#2dd4bf] font-semibold text-xs font-sans flex items-center gap-2.5">
-                <div className="p-1 rounded-md bg-teal-500/10 border border-teal-500/20 text-teal-500 flex items-center justify-center shrink-0">
+              <div
+                className="md:col-span-3 font-semibold text-xs font-sans flex items-center gap-2.5"
+                style={{ color: activePreset.accentHex }}
+              >
+                <div
+                  className="p-1 rounded-md border flex items-center justify-center shrink-0"
+                  style={{
+                    backgroundColor: activePreset.accentMutedHex,
+                    borderColor: `${activePreset.accentHex}33`,
+                    color: activePreset.accentHex,
+                  }}
+                >
                   <Sparkles className="h-3.5 w-3.5" />
                 </div>
-                <span>AI Tooling</span>
+                <span>{isTerminal ? '>_ AI Systems' : 'AI Tooling'}</span>
               </div>
               <div className="md:col-span-9 text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed flex flex-wrap items-center gap-y-2">
                 {['Claude Code', 'Codex', 'Antigravity (IDE)', 'Prompt Engineering', 'Code Verification'].map((skill, idx) => (
                   <React.Fragment key={skill}>
                     {idx > 0 && <span className="text-slate-400 dark:text-slate-600 px-1.5 select-none">·</span>}
-                    <SkillWithContext name={skill} />
+                    <SkillWithContext name={skill} accentColor={activePreset.accentHex} />
                   </React.Fragment>
                 ))}
               </div>
@@ -1233,8 +1506,11 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#e2e8f0] dark:border-white/10">
             <div>
-              <span className="text-teal-600 dark:text-[#2dd4bf] font-sans text-xs font-semibold block mb-1">
-                Get in Touch
+              <span
+                className="font-sans text-xs font-semibold block mb-1"
+                style={{ color: activePreset.accentHex }}
+              >
+                {isTerminal ? '> contact --open' : isEditorial ? 'CORRESPONDENCE · Get in Touch' : 'Get in Touch'}
               </span>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-950 dark:text-white">
                 Let's Build Together.
@@ -1263,10 +1539,15 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
               className="group inline-flex items-center gap-3 sm:gap-6 cursor-pointer select-none"
               title="Click to copy email address"
             >
-              <span className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-mono tracking-tight text-slate-950 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] transition-colors break-all">
+              <span className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black font-mono tracking-tight text-slate-950 dark:text-white group-hover:opacity-80 transition-opacity break-all">
                 thinhthai963@gmail.com
               </span>
-              <div className="p-3 rounded-2xl bg-[#f1f5f9] dark:bg-white/5 border border-[#e2e8f0] dark:border-white/10 group-hover:border-[#0d9488]/50 group-hover:bg-[#0d9488]/10 dark:group-hover:bg-[#2dd4bf]/10 text-slate-500 group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] transition-all shrink-0">
+              <div
+                className="p-3 rounded-2xl bg-[#f1f5f9] dark:bg-white/5 border border-[#e2e8f0] dark:border-white/10 transition-all shrink-0"
+                style={{
+                  color: activePreset.accentHex,
+                }}
+              >
                 <Copy className="h-5 w-5 sm:h-7 sm:w-7 group-hover:scale-110 transition-transform" />
               </div>
             </div>
@@ -1283,14 +1564,23 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
             {/* Phone */}
             <a
               href="tel:0869922096"
-              className="p-4 rounded-xl border border-[#e2e8f0] dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-[#0d9488]/40 hover:bg-[#ffffff] dark:hover:bg-white/5 transition-all flex items-center gap-3 group"
+              className="p-4 rounded-xl border border-[#e2e8f0] dark:border-white/10 bg-white transition-all flex items-center gap-3 group"
+              style={{
+                backgroundColor: theme === 'dark' ? activePreset.surfaceHex : undefined,
+              }}
             >
-              <div className="p-2 rounded-lg bg-teal-500/10 dark:bg-[#2dd4bf]/12 text-teal-600 dark:text-[#2dd4bf]">
+              <div
+                className="p-2 rounded-lg"
+                style={{
+                  backgroundColor: activePreset.accentMutedHex,
+                  color: activePreset.accentHex,
+                }}
+              >
                 <Phone className="h-4 w-4" />
               </div>
               <div>
                 <span className="text-xs text-slate-500 dark:text-slate-400 block font-sans">{t.contact.phoneLabel}</span>
-                <span className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf]">
+                <span className="font-bold text-slate-900 dark:text-white group-hover:opacity-80">
                   (+84) 869 922 096
                 </span>
               </div>
@@ -1301,14 +1591,23 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
               href="https://github.com/soodthin"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-4 rounded-xl border border-[#e2e8f0] dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-[#0d9488]/40 hover:bg-[#ffffff] dark:hover:bg-white/5 transition-all flex items-center gap-3 group"
+              className="p-4 rounded-xl border border-[#e2e8f0] dark:border-white/10 bg-white transition-all flex items-center gap-3 group"
+              style={{
+                backgroundColor: theme === 'dark' ? activePreset.surfaceHex : undefined,
+              }}
             >
-              <div className="p-2 rounded-lg bg-teal-500/10 dark:bg-[#2dd4bf]/12 text-teal-600 dark:text-[#2dd4bf]">
+              <div
+                className="p-2 rounded-lg"
+                style={{
+                  backgroundColor: activePreset.accentMutedHex,
+                  color: activePreset.accentHex,
+                }}
+              >
                 <GithubIcon className="h-4 w-4" />
               </div>
               <div>
                 <span className="text-xs text-slate-500 dark:text-slate-400 block font-sans">{t.contact.githubLabel}</span>
-                <span className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] flex items-center gap-1">
+                <span className="font-bold text-slate-900 dark:text-white group-hover:opacity-80 flex items-center gap-1">
                   github.com/soodthin
                   <ArrowUpRight className="h-3 w-3" />
                 </span>
@@ -1320,14 +1619,23 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
               href="https://www.linkedin.com/in/thinh-thai-dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-4 rounded-xl border border-[#e2e8f0] dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-[#0d9488]/40 hover:bg-[#ffffff] dark:hover:bg-white/5 transition-all flex items-center gap-3 group"
+              className="p-4 rounded-xl border border-[#e2e8f0] dark:border-white/10 bg-white transition-all flex items-center gap-3 group"
+              style={{
+                backgroundColor: theme === 'dark' ? activePreset.surfaceHex : undefined,
+              }}
             >
-              <div className="p-2 rounded-lg bg-teal-500/10 dark:bg-[#2dd4bf]/12 text-teal-600 dark:text-[#2dd4bf]">
+              <div
+                className="p-2 rounded-lg"
+                style={{
+                  backgroundColor: activePreset.accentMutedHex,
+                  color: activePreset.accentHex,
+                }}
+              >
                 <LinkedinIcon className="h-4 w-4" />
               </div>
               <div>
                 <span className="text-xs text-slate-500 dark:text-slate-400 block font-sans">{t.contact.linkedinLabel}</span>
-                <span className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] flex items-center gap-1">
+                <span className="font-bold text-slate-900 dark:text-white group-hover:opacity-80 flex items-center gap-1">
                   thinh-thai-dev
                   <ArrowUpRight className="h-3 w-3" />
                 </span>
@@ -1339,14 +1647,24 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
               href="https://soodthin.github.io/dev-portfolio/"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-4 rounded-xl border border-teal-600/30 dark:border-[#2dd4bf]/30 bg-teal-500/5 dark:bg-[#2dd4bf]/5 hover:bg-[#0d9488]/10 dark:hover:bg-[#2dd4bf]/10 transition-all flex items-center gap-3 group"
+              className="p-4 rounded-xl border transition-all flex items-center gap-3 group"
+              style={{
+                backgroundColor: activePreset.accentMutedHex,
+                borderColor: `${activePreset.accentHex}40`,
+              }}
             >
-              <div className="p-2 rounded-lg bg-teal-500/20 dark:bg-[#2dd4bf]/20 text-teal-600 dark:text-[#2dd4bf]">
+              <div
+                className="p-2 rounded-lg"
+                style={{
+                  backgroundColor: activePreset.accentMutedHex,
+                  color: activePreset.accentHex,
+                }}
+              >
                 <FileText className="h-4 w-4" />
               </div>
               <div>
-                <span className="text-xs text-teal-600 dark:text-[#2dd4bf] block font-sans font-semibold">{t.contact.cvLabel}</span>
-                <span className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] flex items-center gap-1">
+                <span className="text-xs block font-sans font-semibold" style={{ color: activePreset.accentHex }}>{t.contact.cvLabel}</span>
+                <span className="font-bold text-slate-900 dark:text-white group-hover:opacity-80 flex items-center gap-1">
                   {t.contact.cvAction}
                   <ArrowUpRight className="h-3 w-3" />
                 </span>
@@ -1371,13 +1689,19 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
         onClick={handleScrollToTop}
         aria-label={t.contact.backToTop}
         title={t.contact.backToTop}
-        className={`fixed bottom-6 right-6 z-40 p-3 rounded-full bg-[#ffffff]/90 dark:bg-[#0d131a]/90 backdrop-blur-md border border-[#e2e8f0] dark:border-white/10 shadow-lg hover:shadow-xl text-slate-700 dark:text-slate-200 hover:text-teal-600 dark:hover:text-[#2dd4bf] hover:border-[#0d9488]/40 transition-all duration-300 cursor-pointer group active:scale-95 ${
+        className={`fixed bottom-6 right-6 z-40 p-3 rounded-full backdrop-blur-md border border-[#e2e8f0] dark:border-white/10 shadow-lg hover:shadow-xl text-slate-700 dark:text-slate-200 transition-all duration-300 cursor-pointer group active:scale-95 ${
           showScrollTop
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
+        style={{
+          backgroundColor: theme === 'dark' ? `${activePreset.surfaceHex}e6` : 'rgba(255, 255, 255, 0.9)',
+        }}
       >
-        <ArrowUp className="h-5 w-5 transition-transform duration-200 group-hover:-translate-y-0.5 text-slate-700 dark:text-slate-200 group-hover:text-teal-600 dark:group-hover:text-[#2dd4bf] dark:group-hover:text-[#2dd4bf]" />
+        <ArrowUp
+          className="h-5 w-5 transition-transform duration-200 group-hover:-translate-y-0.5"
+          style={{ color: activePreset.accentHex }}
+        />
       </button>
     </main>
   );
