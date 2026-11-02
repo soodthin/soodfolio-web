@@ -66,6 +66,11 @@ function CallbackHandler() {
         }
 
         const authData: AuthResponse = data;
+        try {
+          localStorage.setItem('soodfolio_last_auth_provider', provider.toLowerCase());
+        } catch {
+          // Ignore storage errors
+        }
         login(authData, true); // Persist session with rememberMe=true
         setIsSuccess(true);
 
