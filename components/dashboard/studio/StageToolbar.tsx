@@ -56,18 +56,18 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
   };
 
   return (
-    <div className="h-11 px-3 sm:px-4 border-b border-slate-200/80 dark:border-white/[0.07] bg-white/80 dark:bg-[#0c131a]/80 backdrop-blur-md flex items-center justify-between gap-2 text-xs flex-shrink-0 select-none">
+    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 rounded-full border border-[#d6d0c2] dark:border-white/10 bg-[#fbfaf7]/95 dark:bg-[#0c131a]/90 backdrop-blur-xl shadow-xl shadow-stone-900/10 flex items-center justify-between gap-2.5 text-xs select-none max-w-[95%]">
       {/* Left: Viewport Mode Switchers */}
       <div className="flex items-center gap-1">
-        <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10">
+        <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-[#ede8dd] dark:bg-white/[0.05] border border-[#d6d0c2] dark:border-white/10">
           <button
             type="button"
             onClick={() => onSetViewportMode('16:9')}
             title="Sân khấu chuẩn 16:9 Desktop"
-            className={`p-1 rounded-md transition-colors cursor-pointer ${
+            className={`p-1 rounded-full transition-colors cursor-pointer ${
               viewportMode === '16:9'
-                ? 'bg-white dark:bg-[#111a24] text-teal-600 dark:text-teal-400 shadow-xs'
-                : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'
+                ? 'bg-[#fbfaf7] dark:bg-[#111a24] text-teal-700 dark:text-teal-400 shadow-xs'
+                : 'text-stone-600 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             <Monitor className="h-3.5 w-3.5" />
@@ -76,10 +76,10 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
             type="button"
             onClick={() => onSetViewportMode('tablet')}
             title="Khung nhìn Tablet"
-            className={`p-1 rounded-md transition-colors cursor-pointer ${
+            className={`p-1 rounded-full transition-colors cursor-pointer ${
               viewportMode === 'tablet'
-                ? 'bg-white dark:bg-[#111a24] text-teal-600 dark:text-teal-400 shadow-xs'
-                : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'
+                ? 'bg-[#fbfaf7] dark:bg-[#111a24] text-teal-700 dark:text-teal-400 shadow-xs'
+                : 'text-stone-600 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             <Tablet className="h-3.5 w-3.5" />
@@ -88,10 +88,10 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
             type="button"
             onClick={() => onSetViewportMode('mobile')}
             title="Khung nhìn Mobile (9:16)"
-            className={`p-1 rounded-md transition-colors cursor-pointer ${
+            className={`p-1 rounded-full transition-colors cursor-pointer ${
               viewportMode === 'mobile'
-                ? 'bg-white dark:bg-[#111a24] text-teal-600 dark:text-teal-400 shadow-xs'
-                : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'
+                ? 'bg-[#fbfaf7] dark:bg-[#111a24] text-teal-700 dark:text-teal-400 shadow-xs'
+                : 'text-stone-600 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             <Smartphone className="h-3.5 w-3.5" />
@@ -102,28 +102,29 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
         <select
           value={zoom}
           onChange={(e) => onSetZoom(e.target.value as StageZoom)}
-          className="hidden sm:inline-block px-2 py-1 rounded-md bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-sans text-[11px] cursor-pointer"
+          className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-[#ede8dd] dark:bg-white/[0.05] border border-[#d6d0c2] dark:border-white/10 text-stone-800 dark:text-slate-300 font-sans text-[11px] cursor-pointer"
         >
           <option value="fit">Fit 100%</option>
-          <option value="75%">Zoom 75%</option>
-          <option value="100%">Zoom 100%</option>
-          <option value="125%">Zoom 125%</option>
+          <option value="75%">75%</option>
+          <option value="100%">100%</option>
+          <option value="125%">125%</option>
         </select>
       </div>
 
       {/* Middle: Slide Navigation Arrows */}
-      <div className="flex items-center gap-1.5 font-sans text-xs">
+      <div className="flex items-center gap-1 font-sans text-xs">
         <button
           type="button"
           onClick={handlePrev}
           disabled={currentIndex === 0}
           title="Slide trước (Phím ←)"
-          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-500 dark:text-slate-400 disabled:opacity-20 transition-colors cursor-pointer"
+          aria-label="Slide trước"
+          className="p-1 rounded-full hover:bg-[#ede8dd] dark:hover:bg-white/[0.08] text-stone-600 dark:text-slate-400 disabled:opacity-20 transition-colors cursor-pointer"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3.5 w-3.5" />
         </button>
 
-        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.04] text-slate-800 dark:text-slate-200 font-semibold text-[11px]">
+        <span className="px-2 py-0.5 rounded-full bg-[#ede8dd] dark:bg-white/[0.04] text-stone-800 dark:text-slate-200 font-semibold text-[11px] tabular-nums">
           SLIDE {currentSlide.number} · 0{STUDIO_SLIDES.length}
         </span>
 
@@ -132,28 +133,31 @@ export const StageToolbar: React.FC<StageToolbarProps> = ({
           onClick={handleNext}
           disabled={currentIndex === STUDIO_SLIDES.length - 1}
           title="Slide kế tiếp (Phím →)"
-          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-500 dark:text-slate-400 disabled:opacity-20 transition-colors cursor-pointer"
+          aria-label="Slide kế tiếp"
+          className="p-1 rounded-full hover:bg-[#ede8dd] dark:hover:bg-white/[0.08] text-stone-600 dark:text-slate-400 disabled:opacity-20 transition-colors cursor-pointer"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5" />
         </button>
       </div>
 
       {/* Right: Theme Toggle & Fullscreen */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         <button
           type="button"
           onClick={onToggleStageTheme}
-          title={`Xem trước giao diện: ${stageTheme === 'dark' ? 'Dark' : 'Light'}`}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+          title={stageTheme === 'dark' ? 'Chuyển sang giao diện Sáng' : 'Chuyển sang giao diện Tối'}
+          aria-label="Chuyển đổi giao diện Sáng / Tối của sân khấu"
+          className="p-1 rounded-full text-stone-600 hover:text-stone-900 dark:text-slate-400 dark:hover:text-white hover:bg-[#ede8dd] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
         >
-          {stageTheme === 'dark' ? <Moon className="h-3.5 w-3.5 text-teal-400" /> : <Sun className="h-3.5 w-3.5 text-amber-500" />}
+          {stageTheme === 'dark' ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-stone-700 dark:text-slate-300" />}
         </button>
 
         <button
           type="button"
           onClick={onToggleFullscreen}
           title={isFullscreen ? 'Thu nhỏ (F5)' : 'Toàn màn hình Sân khấu (F5)'}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+          aria-label="Chuyển đổi chế độ toàn màn hình"
+          className="p-1 rounded-full text-stone-600 hover:text-stone-900 dark:text-slate-400 dark:hover:text-white hover:bg-[#ede8dd] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
         >
           {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
         </button>

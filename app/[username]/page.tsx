@@ -168,7 +168,7 @@ export default async function PortfolioPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <VerticalStackDeck data={portfolio} />
+      <VerticalStackDeck data={portfolio} variant={portfolio.themeConfig} />
     </>
   );
 }

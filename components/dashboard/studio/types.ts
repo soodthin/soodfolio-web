@@ -1,6 +1,6 @@
 import { PortfolioData, ProjectDto, ExperienceDto, SkillDto, SocialLinkDto } from '@/types/portfolio';
 
-export type StudioSlideKey = 'cover' | 'projects' | 'experience' | 'skills' | 'settings';
+export type StudioSlideKey = 'cover' | 'projects' | 'experience' | 'skills' | 'contact' | 'settings';
 
 export type InspectorMode = 'form' | 'json';
 
@@ -22,46 +22,46 @@ export const STUDIO_SLIDES: StudioSlideMeta[] = [
   {
     key: 'cover',
     number: '01',
-    title: 'Hồ sơ & Giới thiệu',
-    shortLabel: 'Cover',
-    subtitle: 'Danh tính, chức danh & liên kết',
+    title: 'Identity',
+    shortLabel: 'Identity',
+    subtitle: 'Cover · Bio · Tuyên ngôn',
     iconName: 'User',
     shortcut: '1',
   },
   {
     key: 'projects',
     number: '02',
-    title: 'Selected Case Studies',
+    title: 'Case Studies',
     shortLabel: 'Projects',
-    subtitle: 'Dự án chọn lọc & công nghệ chính',
+    subtitle: 'Dự án tiêu biểu & Hệ thống',
     iconName: 'FolderGit2',
     shortcut: '2',
   },
   {
     key: 'experience',
     number: '03',
-    title: 'Kinh nghiệm Kỹ thuật',
+    title: 'Impact Timeline',
     shortLabel: 'Exp',
-    subtitle: 'Cột mốc sự nghiệp & vai trò',
+    subtitle: 'Kinh nghiệm & Thành tựu',
     iconName: 'Briefcase',
     shortcut: '3',
   },
   {
     key: 'skills',
     number: '04',
-    title: 'Ma trận Kỹ năng',
-    shortLabel: 'Skills',
-    subtitle: 'Ngôn ngữ, framework & công cụ',
+    title: 'System Matrix',
+    shortLabel: 'Matrix',
+    subtitle: 'Ma trận Năng lực & Tech Stack',
     iconName: 'Cpu',
     shortcut: '4',
   },
   {
-    key: 'settings',
+    key: 'contact',
     number: '05',
-    title: 'Cài đặt Hiển thị',
-    shortLabel: 'Config',
-    subtitle: 'Bật/tắt slide & tuỳ chọn deck',
-    iconName: 'Sliders',
+    title: 'Contact & Connect',
+    shortLabel: 'Contact',
+    subtitle: 'Liên hệ, Đặt lịch & Mạng xã hội',
+    iconName: 'Mail',
     shortcut: '5',
   },
 ];

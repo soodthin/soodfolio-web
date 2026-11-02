@@ -88,7 +88,7 @@ export default function LandingPage() {
           1. TELEMETRY TOP STRIP (Restrained Matte)
       ========================================================================== */}
       <aside
-        className={`w-full border-b text-[11px] font-sans font-medium tracking-wider py-2 px-4 sm:px-8 select-none transition-colors ${
+        className={`w-full border-b text-xs font-sans font-medium py-2 px-4 sm:px-8 select-none transition-colors ${
           isDark
             ? 'bg-[#080D12] border-white/10 text-slate-400'
             : 'bg-[#F4F4F5] border-slate-200 text-slate-500'
@@ -100,10 +100,10 @@ export default function LandingPage() {
           <div className="flex items-center space-x-2">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-400" />
             <span className={isDark ? 'text-slate-300 font-medium' : 'text-slate-800 font-medium'}>
-              STAGE 01 • EXHIBITION READY
+              Stage 01 • Exhibition Ready
             </span>
             <span className="opacity-30">•</span>
-            <span className="hidden sm:inline opacity-60">PRESENTATION RUNTIME: CONTINUOUS</span>
+            <span className="hidden sm:inline opacity-60">Runtime: Continuous</span>
           </div>
 
           {/* Live Audience Right */}
@@ -143,19 +143,19 @@ export default function LandingPage() {
           {/* Brand Logo */}
           <Link href="/" className="flex items-center space-x-1.5 group select-none">
             <span
-              className={`font-semibold text-sm sm:text-base tracking-widest font-mono uppercase transition-colors ${
+              className={`font-semibold text-sm sm:text-base font-sans transition-colors ${
                 isDark
                   ? 'text-white group-hover:text-teal-400'
                   : 'text-slate-950 group-hover:text-teal-600'
               }`}
             >
-              SOODFOLIO
+              SoodFolio
             </span>
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-teal-400" />
           </Link>
 
           {/* Primary Nav Links */}
-          <nav className="hidden md:flex items-center space-x-8 text-xs font-sans font-medium uppercase tracking-wider text-slate-400">
+          <nav className="hidden md:flex items-center space-x-8 text-sm font-sans font-medium text-slate-400">
             <a
               href="#stage"
               className={`transition-colors ${
@@ -265,7 +265,7 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Eyebrow Badge (Flat Solid Teal, Zero Glow) */}
-          <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 font-sans font-medium text-xs uppercase tracking-wider mb-6">
+          <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded border border-teal-500/20 bg-teal-500/10 text-teal-400 font-sans font-medium text-xs mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
             <span>Stage 01 • Exhibition Ready</span>
           </div>
@@ -326,14 +326,14 @@ export default function LandingPage() {
 
               <button
                 type="submit"
-                className="w-full sm:w-auto font-sans font-medium text-xs uppercase tracking-wider px-5 py-2.5 rounded transition-colors flex items-center justify-center space-x-1.5 whitespace-nowrap bg-teal-400 hover:bg-teal-300 text-slate-950 cursor-pointer"
+                className="w-full sm:w-auto font-sans font-semibold text-sm px-5 py-2.5 rounded transition-colors flex items-center justify-center space-x-1.5 whitespace-nowrap bg-teal-400 hover:bg-teal-300 text-slate-950 cursor-pointer"
               >
                 <span>{lang === 'en' ? 'Get Started Free' : 'Bắt Đầu Miễn Phí'}</span>
                 <span>→</span>
               </button>
             </form>
 
-            <div className="mt-3 flex items-center justify-center space-x-4 text-[11px] font-sans font-medium text-slate-400 uppercase tracking-widest select-none">
+            <div className="mt-3 flex items-center justify-center space-x-4 text-xs font-sans font-medium text-slate-400 select-none">
               <span className="flex items-center space-x-1.5">
                 <Check className="w-3.5 h-3.5 text-teal-400 stroke-[2.5]" />
                 <span>{lang === 'en' ? 'No Credit Card Required' : 'Không Cần Thẻ Tín Dụng'}</span>
@@ -377,8 +377,8 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="font-sans font-medium text-xs uppercase tracking-widest text-teal-400">
-              ATTENTION ECONOMICS
+            <span className="font-sans font-semibold text-xs text-teal-400">
+              Attention Economics
             </span>
             <h2
               className={`mt-3 text-3xl sm:text-5xl font-bold tracking-tight leading-tight ${
@@ -386,8 +386,8 @@ export default function LandingPage() {
               }`}
             >
               {lang === 'en'
-                ? 'THE PDF IS WHERE GREAT CANDIDATES BECOME INTERCHANGEABLE.'
-                : 'TRANG PDF PHẲNG LÀ NƠI ỨNG VIÊN XUẤT SẮC BỊ ĐỒNG HÓA NHƯ NHAU.'}
+                ? 'The PDF is where great candidates become interchangeable.'
+                : 'Trang PDF phẳng là nơi ứng viên xuất sắc bị đồng hóa như nhau.'}
             </h2>
             <p className={`mt-3 text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               {lang === 'en'
@@ -404,13 +404,13 @@ export default function LandingPage() {
               }`}
             >
               <div>
-                <div className="flex items-center justify-between font-mono text-xs pb-4 border-b border-white/[0.06] text-slate-400">
-                  <span className="uppercase tracking-widest">LEGACY FORMAT</span>
-                  <span className="text-rose-400 font-medium uppercase">ATS-VOID</span>
+                <div className="flex items-center justify-between font-sans text-xs pb-4 border-b border-white/[0.06] text-slate-400">
+                  <span className="font-medium">Legacy format</span>
+                  <span className="text-rose-400 font-medium">ATS-Void</span>
                 </div>
 
                 <h3
-                  className={`mt-6 text-xl font-semibold uppercase tracking-wide ${
+                  className={`mt-6 text-xl font-semibold ${
                     isDark ? 'text-slate-400' : 'text-slate-500 line-through'
                   }`}
                 >
@@ -456,8 +456,8 @@ export default function LandingPage() {
                 </ul>
               </div>
 
-              <div className="mt-10 pt-4 border-t border-white/[0.06] text-[11px] font-mono text-slate-400">
-                DISCARD RATE: 94.2%
+              <div className="mt-10 pt-4 border-t border-white/[0.06] text-xs font-sans text-slate-400">
+                Tỷ lệ bị loại bỏ: 94.2%
               </div>
             </div>
 
@@ -467,18 +467,18 @@ export default function LandingPage() {
                 isDark ? 'bg-[#0C131A] border-teal-500/40' : 'bg-white border-teal-500/40 shadow-xs'
               }`}
             >
-              <div className="absolute top-0 right-0 bg-teal-400 text-slate-950 font-mono text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-lg">
-                RECOMMENDED STANDARD
+              <div className="absolute top-0 right-0 bg-teal-400 text-slate-950 font-sans text-xs font-semibold px-3 py-1 rounded-bl-lg">
+                Recommended Standard
               </div>
 
               <div>
-                <div className="flex items-center justify-between font-mono text-xs pb-4 border-b border-teal-500/20 text-teal-400">
-                  <span className="font-medium uppercase tracking-widest">SOODFOLIO STANDARD</span>
-                  <span className="font-medium tracking-widest">ACTIVE REPUTATION</span>
+                <div className="flex items-center justify-between font-sans text-xs pb-4 border-b border-teal-500/20 text-teal-400">
+                  <span className="font-medium text-xs font-sans">SoodFolio Standard</span>
+                  <span className="font-medium text-xs font-sans">Active Reputation</span>
                 </div>
 
                 <h3
-                  className={`mt-6 text-xl sm:text-2xl font-bold uppercase tracking-wide ${
+                  className={`mt-6 text-xl sm:text-2xl font-bold ${
                     isDark ? 'text-white' : 'text-slate-950'
                   }`}
                 >
@@ -552,8 +552,8 @@ export default function LandingPage() {
               isDark ? 'bg-[#0C131A] border-white/10' : 'bg-white border-slate-200 shadow-xs'
             }`}
           >
-            <span className="font-mono text-xs uppercase tracking-widest text-teal-400 font-medium">
-              CLAIM YOUR SLIDE DECK IN SECONDS
+            <span className="font-sans text-xs text-teal-400 font-semibold">
+              Khởi tạo slide deck trong tích tắc
             </span>
             <h2
               className={`mt-4 text-3xl sm:text-5xl font-bold tracking-tight leading-tight ${
@@ -591,7 +591,7 @@ export default function LandingPage() {
             </div>
 
             {/* Micro Features */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[11px] font-sans font-medium text-slate-400 uppercase tracking-wider select-none">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs font-sans font-medium text-slate-400 select-none">
               <span className="flex items-center space-x-1.5">
                 <Check className="w-3.5 h-3.5 text-teal-400 stroke-[2.5]" />
                 <span>{lang === 'en' ? 'No credit card needed' : 'Không cần thẻ tín dụng'}</span>
@@ -609,7 +609,7 @@ export default function LandingPage() {
           MAIN FOOTER (1px Razor Border, Matte Finish)
       ========================================================================== */}
       <footer
-        className={`border-t py-14 text-xs font-mono transition-colors ${
+        className={`border-t py-14 text-xs font-sans transition-colors ${
           isDark ? 'border-white/10 bg-[#080D12] text-slate-400' : 'border-slate-200 bg-[#FAFCFC] text-slate-500'
         }`}
         data-purpose="site-footer"
@@ -618,8 +618,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             {/* Brand Info Column */}
             <div className="col-span-2">
-              <Link href="/" className="font-semibold text-base tracking-widest uppercase group select-none">
-                <span className={isDark ? 'text-white' : 'text-slate-950'}>SOODFOLIO</span>
+              <Link href="/" className="font-semibold text-base group select-none">
+                <span className={isDark ? 'text-white' : 'text-slate-950'}>SoodFolio</span>
                 <span className="text-teal-400 ml-0.5">●</span>
               </Link>
               <p className="mt-3 text-slate-400 font-sans text-xs max-w-sm leading-relaxed">
@@ -630,7 +630,7 @@ export default function LandingPage() {
 
             {/* Link Column 1 */}
             <div>
-              <h4 className={`font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <h4 className={`font-semibold text-sm mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 Curation
               </h4>
               <ul className="space-y-2">
@@ -643,7 +643,7 @@ export default function LandingPage() {
 
             {/* Link Column 2 */}
             <div>
-              <h4 className={`font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <h4 className={`font-semibold text-sm mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 Showcase
               </h4>
               <ul className="space-y-2">
@@ -656,7 +656,7 @@ export default function LandingPage() {
 
             {/* Link Column 3 */}
             <div>
-              <h4 className={`font-semibold uppercase tracking-wider mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <h4 className={`font-semibold text-sm mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 Platform
               </h4>
               <ul className="space-y-2">
@@ -673,11 +673,11 @@ export default function LandingPage() {
 
           {/* Copyright Strip */}
           <div
-            className={`mt-12 pt-6 border-t flex flex-col sm:flex-row items-center justify-between text-[10px] text-slate-400 uppercase tracking-widest gap-2 ${
+            className={`mt-12 pt-6 border-t flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 font-sans gap-2 ${
               isDark ? 'border-white/10' : 'border-slate-200'
             }`}
           >
-            <div>© 2026 SOODFOLIO PLATFORM. ALL RIGHTS RESERVED.</div>
+            <div>© 2026 SoodFolio Platform. All rights reserved.</div>
           </div>
         </div>
       </footer>

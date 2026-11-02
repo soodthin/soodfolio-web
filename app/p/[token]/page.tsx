@@ -246,7 +246,7 @@ export default function TargetedDeckViewerPage({ params }: PageProps) {
       {/* Render Active Template */}
       {layout === 'CINEMATIC_DECK' ? (
         <div className="w-full">
-          <VerticalStackDeck data={filteredPortfolio} />
+          <VerticalStackDeck data={filteredPortfolio} variant={filteredPortfolio.themeConfig} />
         </div>
       ) : (
         <div className="w-full">

@@ -12,6 +12,11 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+e2e/screenshots/
+*.jsonl
 
 # next.js
 /.next/

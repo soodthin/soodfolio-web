@@ -3,42 +3,37 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { API_BASE, AuthResponse, ApiErrorResponse } from '@/lib/auth';
-import { AuthLayout } from '@/components/auth/AuthLayout';
+import { StageGateAuthLayout } from '@/components/auth/StageGateAuthLayout';
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
+import { ThemePresetKey } from '@/lib/themePresets';
 import { 
-  User, 
-  AtSign, 
-  Mail, 
-  Lock, 
   Eye, 
   EyeOff, 
   ArrowRight, 
   Loader2, 
   AlertCircle,
-  X
+  X,
+  Check
 } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [agreeTerms, setAgreeTerms] = useState(true);
-
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [activeTheme, setActiveTheme] = useState<ThemePresetKey>('classic-deck');
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Auto-dismiss topup notification
+  // Auto-dismiss top error banner
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => {
@@ -48,7 +43,13 @@ export default function RegisterPage() {
     }
   }, [errorMessage]);
 
-  // Live Password strength calculation
+  // Clean and sanitize username input
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    setUsername(rawVal);
+  };
+
+  // Live password strength calculation
   const getPasswordStrength = () => {
     if (!password) return 0;
     let score = 0;
@@ -60,38 +61,29 @@ export default function RegisterPage() {
   };
 
   const passwordScore = getPasswordStrength();
-
-  // Username validation helper
-  const isUsernameValid = (name: string) => /^[a-z0-9_-]{3,30}$/.test(name);
+  const isUsernameValid = /^[a-z0-9_-]{3,30}$/.test(username.trim());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
+    const cleanUsername = username.trim().toLowerCase();
+    const cleanFullName = fullName.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
     // Frontend validation
-    if (!fullName.trim() || !username.trim() || !email.trim() || !password) {
+    if (!cleanUsername || !cleanFullName || !cleanEmail || !password) {
       setErrorMessage('Vui lòng điền đầy đủ tất cả các trường.');
       return;
     }
 
-    const cleanUsername = username.trim().toLowerCase();
-    if (!isUsernameValid(cleanUsername)) {
-      setErrorMessage('Tên người dùng phải có từ 3-30 ký tự thường, số, dấu gạch nối hoặc gạch dưới.');
+    if (!isUsernameValid) {
+      setErrorMessage('Tên định danh Stage phải có từ 3-30 ký tự thường, số, dấu gạch nối hoặc gạch dưới.');
       return;
     }
 
     if (password.length < 6) {
       setErrorMessage('Mật khẩu tối thiểu phải từ 6 ký tự trở lên.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorMessage('Mật khẩu xác nhận không khớp.');
-      return;
-    }
-
-    if (!agreeTerms) {
-      setErrorMessage('Vui lòng đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.');
       return;
     }
 
@@ -102,9 +94,9 @@ export default function RegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullName: fullName.trim(),
+          fullName: cleanFullName,
           username: cleanUsername,
-          email: email.trim().toLowerCase(),
+          email: cleanEmail,
           password,
         }),
       });
@@ -114,13 +106,13 @@ export default function RegisterPage() {
           timestamp: '',
           status: res.status,
           error: 'Error',
-          message: 'Đăng ký tài khoản không thành công.',
+          message: 'Khởi tạo tài khoản không thành công.',
           path: '',
         }));
 
-        let displayMsg = errorData.message || 'Đăng ký thất bại. Tên đăng nhập hoặc email có thể đã tồn tại.';
+        let displayMsg = errorData.message || 'Khởi tạo thất bại. Tên định danh hoặc email có thể đã tồn tại.';
         if (displayMsg.toLowerCase().includes('duplicate') || displayMsg.toLowerCase().includes('already exists')) {
-          displayMsg = 'Tên tài khoản hoặc địa chỉ email này đã được sử dụng.';
+          displayMsg = 'Tên định danh Stage hoặc email này đã có kỹ sư đăng ký sử dụng.';
         }
         setErrorMessage(displayMsg);
         setIsLoading(false);
@@ -128,6 +120,11 @@ export default function RegisterPage() {
       }
 
       const authData: AuthResponse = await res.json();
+      try {
+        localStorage.setItem('soodfolio_last_auth_provider', 'email');
+      } catch {
+        // Ignore
+      }
       login(authData, true);
       router.push('/dashboard');
     } catch (err) {
@@ -139,13 +136,13 @@ export default function RegisterPage() {
 
   return (
     <>
-      {/* Floating Topup Notification Banner */}
+      {/* Floating Error Toast */}
       {errorMessage && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92vw] sm:w-auto animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="px-4 py-3 rounded-2xl bg-white/95 dark:bg-[#0c141d]/95 border border-rose-500/40 text-rose-800 dark:text-rose-300 text-xs shadow-2xl backdrop-blur-md flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <AlertCircle className="h-4 w-4 text-rose-500 flex-shrink-0" />
-              <span className="font-medium leading-relaxed">{errorMessage}</span>
+              <span className="font-sans font-medium leading-relaxed">{errorMessage}</span>
             </div>
             <button
               type="button"
@@ -159,115 +156,136 @@ export default function RegisterPage() {
         </div>
       )}
 
-      <AuthLayout
-        title="Tạo không gian trình chiếu"
-        subtitle="Sở hữu slide deck portfolio trực quan dành riêng cho phong cách chuyên nghiệp của bạn."
-        cardWidth="max-w-lg sm:max-w-xl"
+      <StageGateAuthLayout
+        badgeText="STAGE INITIALIZATION"
+        title="Khởi tạo Stage trình chiếu"
+        subtitle="Xác lập không gian portfolio trực quan theo tiêu chuẩn kỹ thuật cấp cao."
+        fullName={fullName}
+        username={username}
+        activeTheme={activeTheme}
+        onThemeChange={setActiveTheme}
+        footerPrompt={{
+          question: 'Đã có Stage trình chiếu?',
+          actionText: 'Trở lại Studio →',
+          actionHref: '/login',
+        }}
       >
-        <div className="space-y-3">
-          {/* Compact Form */}
-          <form onSubmit={handleSubmit} className="space-y-2.5">
-            {/* Row 1: Full Name & Handle (2 Columns) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Full Name */}
-              <div className="space-y-1">
-                <label 
-                  htmlFor="fullName"
-                  className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+        <div className="space-y-4">
+          {/* Flipped OAuth Hierarchy (GitHub & Google SSO First) */}
+          <SocialAuthButtons variant="hero" label="hoặc tiếp tục với email" />
+
+          {/* Registration Form (Zero friction, no confirm password) */}
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {/* HERO FIELD 1: Claim Stage URL with Live Slug Telemetry */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="username"
+                  className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
                 >
-                  Họ và tên
+                  Xác lập địa chỉ Stage
                 </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-500 dark:group-focus-within:text-teal-400 transition-colors">
-                    <User className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Elena Vance"
-                    required
-                    className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 dark:bg-[#12141d] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-200 outline-none"
-                  />
-                </div>
+                <span className="text-[11px] font-mono text-slate-500">
+                  {username ? (
+                    isUsernameValid ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                        <Check className="w-3 h-3 stroke-[2.5]" />
+                        <span>Sẵn sàng nhận diện</span>
+                      </span>
+                    ) : (
+                      <span className="text-amber-500">3-30 ký tự</span>
+                    )
+                  ) : (
+                    <span>soodfolio.com/[slug]</span>
+                  )}
+                </span>
               </div>
 
-              {/* Username / Handle */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label 
-                    htmlFor="username"
-                    className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
-                  >
-                    Username
-                  </label>
-                  <span className="text-[10px] font-mono text-slate-400">
-                    soodfolio.com/{username ? username.toLowerCase() : 'you'}
-                  </span>
-                </div>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-500 dark:group-focus-within:text-teal-400 transition-colors">
-                    <AtSign className="h-4 w-4" />
-                  </div>
-                  <input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                    placeholder="elenavance"
-                    required
-                    maxLength={30}
-                    className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 dark:bg-[#12141d] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-200 outline-none font-mono"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Row 2: Email Address */}
-            <div className="space-y-1">
-              <label 
-                htmlFor="email"
-                className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
-              >
-                Địa chỉ Email
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-500 dark:group-focus-within:text-teal-400 transition-colors">
-                  <Mail className="h-4 w-4" />
-                </div>
+              {/* URL Claim Input Container */}
+              <div className="flex items-center rounded-xl bg-slate-50 dark:bg-[#0c141d] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/20 focus-within:border-teal-500 dark:focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-500/10 transition-all duration-150 overflow-hidden">
+                <span className="px-3.5 py-2.5 text-xs font-mono font-medium text-slate-500 dark:text-slate-400 bg-slate-100/70 dark:bg-white/[0.03] border-r border-slate-200/80 dark:border-white/[0.06] select-none shrink-0">
+                  soodfolio.com/
+                </span>
                 <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="elena@example.com"
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={handleUsernameChange}
+                  placeholder="alex.vance"
                   required
-                  className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 dark:bg-[#12141d] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-200 outline-none"
+                  autoComplete="username"
+                  maxLength={30}
+                  className="w-full h-10 px-3 bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm font-mono outline-none"
                 />
               </div>
             </div>
 
-            {/* Row 3: Mật khẩu (Label is just 'Mật khẩu', no (≥ 6 ký tự)) */}
+            {/* FIELD 2: Full Name (Binds in real time to Slide 01) */}
             <div className="space-y-1">
-              <label 
-                htmlFor="password"
-                className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
+              <label
+                htmlFor="fullName"
+                className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
               >
-                Mật khẩu
+                Họ và tên
               </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-500 dark:group-focus-within:text-teal-400 transition-colors">
-                  <Lock className="h-4 w-4" />
-                </div>
+              <input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Alex Vance"
+                required
+                autoComplete="name"
+                className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-[#0c141d] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-150 outline-none font-sans"
+              />
+            </div>
+
+            {/* FIELD 3: Email */}
+            <div className="space-y-1">
+              <label
+                htmlFor="email"
+                className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
+              >
+                Email công việc
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="alex@soodfolio.com"
+                required
+                autoComplete="email"
+                className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-[#0c141d] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-150 outline-none font-sans"
+              />
+            </div>
+
+            {/* FIELD 4: Password (Single Input, zero confirm-password friction) */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="block text-xs font-sans text-slate-700 dark:text-slate-300 font-medium"
+                >
+                  Mật khẩu bảo mật
+                </label>
+                {password && (
+                  <span className="text-[10px] font-sans font-medium text-slate-500">
+                    {passwordScore <= 1 ? 'Cơ bản' : passwordScore <= 2 ? 'Trung bình' : passwordScore === 3 ? 'Mạnh' : 'Rất mạnh'}
+                  </span>
+                )}
+              </div>
+
+              <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder="Tối thiểu 6 ký tự"
                   required
-                  className="w-full h-10 pl-10 pr-10 rounded-xl bg-slate-50 dark:bg-[#12141d] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-200 outline-none"
+                  autoComplete="new-password"
+                  className="w-full h-10 px-3.5 pr-10 rounded-xl bg-slate-50 dark:bg-[#0c141d] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-150 outline-none font-sans"
                 />
                 <button
                   type="button"
@@ -278,111 +296,60 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+
+              {/* Password strength hairline meters */}
+              {password && (
+                <div className="grid grid-cols-4 gap-1 pt-1">
+                  <div
+                    className={`h-1 rounded-full transition-colors ${
+                      passwordScore >= 1 ? 'bg-teal-500 dark:bg-[#2dd4bf]' : 'bg-slate-200 dark:bg-white/10'
+                    }`}
+                  />
+                  <div
+                    className={`h-1 rounded-full transition-colors ${
+                      passwordScore >= 2 ? 'bg-teal-500 dark:bg-[#2dd4bf]' : 'bg-slate-200 dark:bg-white/10'
+                    }`}
+                  />
+                  <div
+                    className={`h-1 rounded-full transition-colors ${
+                      passwordScore >= 3 ? 'bg-teal-500 dark:bg-[#2dd4bf]' : 'bg-slate-200 dark:bg-white/10'
+                    }`}
+                  />
+                  <div
+                    className={`h-1 rounded-full transition-colors ${
+                      passwordScore >= 4 ? 'bg-teal-500 dark:bg-[#2dd4bf]' : 'bg-slate-200 dark:bg-white/10'
+                    }`}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Row 4: Xác nhận mật khẩu (Nằm ngay dưới phần Mật khẩu) */}
-            <div className="space-y-1">
-              <label 
-                htmlFor="confirmPassword"
-                className="block text-[11px] font-mono uppercase tracking-wider text-slate-700 dark:text-slate-300 font-medium"
-              >
-                Xác nhận mật khẩu
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-teal-500 dark:group-focus-within:text-teal-400 transition-colors">
-                  <Lock className="h-4 w-4" />
-                </div>
-                <input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  required
-                  className="w-full h-10 pl-10 pr-10 rounded-xl bg-slate-50 dark:bg-[#12141d] border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-500/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs sm:text-sm transition-all duration-200 outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer transition-colors"
-                  aria-label={showConfirmPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Strength meter bars (compact) */}
-            {password.length > 0 && (
-              <div className="space-y-1 pt-0.5">
-                <div className="grid grid-cols-4 gap-1.5">
-                  <div className={`h-1 rounded-full transition-colors ${passwordScore >= 1 ? 'bg-teal-500' : 'bg-slate-200 dark:bg-white/10'}`} />
-                  <div className={`h-1 rounded-full transition-colors ${passwordScore >= 2 ? 'bg-teal-500' : 'bg-slate-200 dark:bg-white/10'}`} />
-                  <div className={`h-1 rounded-full transition-colors ${passwordScore >= 3 ? 'bg-teal-500' : 'bg-slate-200 dark:bg-white/10'}`} />
-                  <div className={`h-1 rounded-full transition-colors ${passwordScore >= 4 ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-white/10'}`} />
-                </div>
-                <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 flex justify-between">
-                  <span>Độ an toàn mật khẩu</span>
-                  <span className={passwordScore >= 4 ? 'text-emerald-600 dark:text-emerald-400' : 'text-teal-600 dark:text-teal-400'}>
-                    {passwordScore <= 1 ? 'Cơ bản' : passwordScore <= 3 ? 'Khá' : 'Rất an toàn'}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Terms Agreement Checkbox */}
-            <div className="pt-0.5">
-              <label className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="w-3.5 h-3.5 mt-0.5 rounded bg-slate-100 dark:bg-[#12141d] border-slate-300 dark:border-white/20 text-teal-600 dark:text-teal-500 focus:ring-teal-500/20 cursor-pointer accent-teal-500"
-                />
-                <span className="leading-snug">
-                  Tôi đồng ý với{' '}
-                  <Link href="#" className="text-teal-600 dark:text-teal-400 hover:underline">Điều khoản dịch vụ</Link>
-                  {' '}và{' '}
-                  <Link href="#" className="text-teal-600 dark:text-teal-400 hover:underline">Chính sách bảo mật</Link>.
-                </span>
-              </label>
-            </div>
+            {/* Terms text (No checkbox friction) */}
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans leading-relaxed pt-1">
+              Bằng cách khởi tạo Stage, bạn đồng ý với Điều khoản dịch vụ và Chính sách quyền riêng tư của SoodFolio.
+            </p>
 
             {/* Submit Action Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-10 rounded-xl bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-semibold text-xs sm:text-sm shadow-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.99] mt-1"
+              className="w-full h-11 rounded-xl bg-teal-500 hover:bg-teal-400 text-white dark:bg-teal-400 dark:hover:bg-teal-300 dark:text-slate-950 font-sans font-semibold text-xs sm:text-sm shadow-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.99] mt-2"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin text-current" />
-                  <span>Đang khởi tạo tài khoản...</span>
+                  <span>Đang khởi tạo không gian...</span>
                 </>
               ) : (
                 <>
-                  <span>Tạo tài khoản & Mở Workspace</span>
+                  <span>Khởi tạo Stage</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
             </button>
           </form>
-
-          {/* Social Auth Buttons (2 Small circular buttons below credentials form) */}
-          <SocialAuthButtons label="Hoặc đăng ký nhanh bằng" />
-
-          {/* Link to Login */}
-          <div className="pt-1 text-center text-xs text-slate-500 dark:text-slate-400">
-            Đã có tài khoản SoodFolio?{' '}
-            <Link 
-              href="/login" 
-              className="font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-500 dark:hover:text-teal-300 hover:underline transition-colors ml-1"
-            >
-              Đăng nhập ngay →
-            </Link>
-          </div>
         </div>
-      </AuthLayout>
+      </StageGateAuthLayout>
     </>
   );
 }

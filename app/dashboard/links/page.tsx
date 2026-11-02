@@ -203,7 +203,7 @@ export default function ShareLinksManagementPage() {
                 <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">
                   Targeted Share Links
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-500/20">
+                <span className="px-2 py-0.5 rounded text-xs font-sans font-medium bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-500/20">
                   DocSend Engine
                 </span>
               </div>
@@ -228,9 +228,9 @@ export default function ShareLinksManagementPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
         
         {/* Intro Banner */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-teal-500/10 via-teal-500/5 to-transparent border border-teal-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-5 sm:p-6 rounded-2xl bg-teal-500/[0.04] border border-teal-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-teal-700 dark:text-teal-300 uppercase">
+            <div className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-teal-700 dark:text-teal-300">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Snapshot Bất Biến & Telemetry Radar</span>
             </div>
@@ -242,13 +242,13 @@ export default function ShareLinksManagementPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0 font-mono text-xs text-slate-600 dark:text-slate-300">
+          <div className="flex items-center gap-2 flex-shrink-0 font-sans text-xs text-slate-600 dark:text-slate-300">
             <div className="p-3 rounded-xl bg-white/80 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-center min-w-[100px]">
-              <span className="text-[10px] uppercase text-slate-400 block">Tổng số link</span>
+              <span className="text-xs text-slate-400 block">Tổng số link</span>
               <span className="font-bold text-base text-slate-900 dark:text-white">{links.length}</span>
             </div>
             <div className="p-3 rounded-xl bg-white/80 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-center min-w-[100px]">
-              <span className="text-[10px] uppercase text-slate-400 block">Tổng lượt xem</span>
+              <span className="text-xs text-slate-400 block">Tổng lượt xem</span>
               <span className="font-bold text-base text-teal-600 dark:text-teal-400">
                 {links.reduce((acc, cur) => acc + (cur.viewCount || 0), 0)}
               </span>
@@ -325,7 +325,7 @@ export default function ShareLinksManagementPage() {
                       )}
 
                       {/* Layout badge */}
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-sans bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10">
                         {link.customLayout === 'CINEMATIC_DECK' ? (
                           <>
                             <Layers className="h-3 w-3 text-teal-500" />

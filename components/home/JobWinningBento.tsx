@@ -109,24 +109,24 @@ export function JobWinningBento({ theme, lang }: JobWinningBentoProps) {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between font-mono text-xs py-2 px-3 rounded-lg border border-white/10 bg-black/40">
-                  <span data-testid="bento-target-link" className="text-teal-400 truncate">
+                <div className="flex items-center justify-between font-mono text-xs py-2 px-3 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#080d12] text-slate-900 dark:text-white">
+                  <span data-testid="bento-target-link" className="text-teal-600 dark:text-teal-400 truncate">
                     https://soodfolio.com/p/{targetCompany}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleCopy(`https://soodfolio.com/p/${targetCompany}`)}
-                    className="ml-2 flex items-center space-x-1 text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0 font-sans font-medium"
+                    className="ml-2 flex items-center space-x-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer shrink-0 font-sans font-medium"
                   >
-                    {copiedLink ? <Check className="w-3.5 h-3.5 text-teal-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" /> : <Copy className="w-3.5 h-3.5" />}
                     <span className="text-[10px]">{copiedLink ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-slate-400">
-              <span className="flex items-center space-x-1.5 text-teal-400 font-medium">
+            <div className="mt-6 pt-4 border-t border-slate-200/80 dark:border-white/[0.06] flex items-center justify-between text-xs font-mono text-slate-500 dark:text-slate-400">
+              <span className="flex items-center space-x-1.5 text-teal-600 dark:text-teal-400 font-medium">
                 <Lock className="w-3 h-3" />
                 <span>Password Protection &amp; Self-Destruct Supported</span>
               </span>
@@ -211,38 +211,38 @@ export function JobWinningBento({ theme, lang }: JobWinningBentoProps) {
               {/* Mini Horizontal Bar Chart */}
               <div className="mt-5 space-y-2.5 font-mono text-xs">
                 <div>
-                  <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                  <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
                     <span>Slide 01: Profile Overview</span>
-                    <span className="text-slate-300">15s</span>
+                    <span className="text-slate-600 dark:text-slate-300">15s</span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-slate-400 rounded-full" style={{ width: '20%' }} />
+                  <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
+                    <div className="h-full bg-slate-400 dark:bg-slate-400 rounded-full" style={{ width: '20%' }} />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                  <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
                     <span>Slide 02: Flagship Case Study</span>
-                    <span className="text-teal-400 font-bold">75s (High Dwell)</span>
+                    <span className="text-teal-600 dark:text-teal-400 font-bold">75s (High Dwell)</span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-teal-400 rounded-full" style={{ width: '85%' }} />
+                  <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
+                    <div className="h-full bg-teal-500 dark:bg-teal-400 rounded-full" style={{ width: '85%' }} />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                  <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
                     <span>Slide 03: Distributed Architecture</span>
-                    <span className="text-slate-300">40s</span>
+                    <span className="text-slate-600 dark:text-slate-300">40s</span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-slate-400 rounded-full" style={{ width: '45%' }} />
+                  <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden">
+                    <div className="h-full bg-slate-400 dark:bg-slate-400 rounded-full" style={{ width: '45%' }} />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/[0.06] text-xs font-mono text-slate-400">
+            <div className="mt-6 pt-4 border-t border-slate-200/80 dark:border-white/[0.06] text-xs font-mono text-slate-500 dark:text-slate-400">
               {lang === 'en' ? 'Instant push notification on first open' : 'Báo ngay khi nhà tuyển dụng mở link'}
             </div>
           </div>

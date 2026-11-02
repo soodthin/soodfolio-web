@@ -99,8 +99,8 @@ export const JsonCodeEditor: React.FC<JsonCodeEditorProps> = ({
     <div className="space-y-3 text-xs flex flex-col h-full">
       <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-white/[0.06]">
         <div>
-          <span className="font-mono text-[10px] text-teal-600 dark:text-teal-400 uppercase tracking-widest font-bold">
-            RAW JSON SPEC // {activeSlide.toUpperCase()}
+          <span className="text-xs font-sans font-semibold text-teal-600 dark:text-teal-400">
+            Đặc tả JSON thô • {activeSlide}
           </span>
           <h2 className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
             Trình Biên Tập Mã JSON (Dev-First)
@@ -113,6 +113,7 @@ export const JsonCodeEditor: React.FC<JsonCodeEditorProps> = ({
             onClick={handleCopy}
             className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-200 cursor-pointer"
             title="Sao chép JSON"
+            aria-label="Sao chép mã JSON vào clipboard"
           >
             {copied ? <Check className="h-3.5 w-3.5 text-teal-500" /> : <Copy className="h-3.5 w-3.5" />}
           </button>
@@ -150,8 +151,8 @@ export const JsonCodeEditor: React.FC<JsonCodeEditorProps> = ({
           spellCheck={false}
           className="w-full h-full min-h-[360px] p-3.5 rounded-xl bg-slate-900 text-teal-300 font-mono text-[11px] leading-relaxed border border-slate-700 dark:border-white/10 focus:outline-none focus:border-teal-400 selection:bg-teal-500/30 resize-none shadow-inner"
         />
-        <div className="absolute bottom-3 right-3 text-[10px] font-mono text-slate-500 bg-slate-900/80 px-2 py-0.5 rounded border border-white/5 pointer-events-none">
-          JSON 2.0 · UTF-8
+        <div className="absolute bottom-3 right-3 text-xs font-mono text-slate-500 bg-slate-900/80 px-2 py-0.5 rounded border border-white/5 pointer-events-none">
+          JSON 2.0 • UTF-8
         </div>
       </div>
     </div>

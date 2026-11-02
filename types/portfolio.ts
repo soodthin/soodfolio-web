@@ -1,4 +1,4 @@
-﻿export interface SocialLinkDto {
+export interface SocialLinkDto {
   platform: string;
   url: string;
   label?: string | null;
@@ -56,6 +56,7 @@ export interface PortfolioData {
   statusText?: string | null;
   resumeUrl?: string | null;
   themeMode?: string | null;
+  themeConfig?: string | null;
   isPublished?: boolean;
   totalViews?: number;
   showExperience: boolean;

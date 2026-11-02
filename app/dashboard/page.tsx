@@ -10,26 +10,40 @@ import { fetchWithAuth } from '@/lib/apiClient';
 import { PortfolioData, ProjectDto, ExperienceDto, SkillDto } from '@/types/portfolio';
 import {
   StudioSlideKey,
-  InspectorMode,
+  STUDIO_SLIDES,
   StageZoom,
   StageViewportMode,
   StudioHeader,
   SlideRail,
-  SlideInspector,
   PresentationStage,
   StageToolbar,
+  SlideInspector,
   StudioCommandPalette,
   SnapshotHistoryModal,
+  PreviewModal,
   useStudioShortcuts,
 } from '@/components/dashboard/studio';
 import {
-  AlertTriangle,
-  Loader2,
+  User,
+  FolderGit2,
+  Briefcase,
+  Cpu,
+  Mail,
+  Sliders,
   CheckCircle2,
   AlertCircle,
-  FileEdit,
-  Monitor,
+  Eye,
+  Loader2,
 } from 'lucide-react';
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  User,
+  FolderGit2,
+  Briefcase,
+  Cpu,
+  Mail,
+  Sliders,
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -51,15 +65,15 @@ export default function DashboardPage() {
   // Modals & Command Palette States
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [snapshotModalOpen, setSnapshotModalOpen] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
   // Studio Interactive States
   const [activeSlide, setActiveSlide] = useState<StudioSlideKey>('cover');
-  const [inspectorMode, setInspectorMode] = useState<InspectorMode>('form');
-  const [mobileActiveTab, setMobileActiveTab] = useState<'inspector' | 'stage'>('inspector');
   const [stageZoom, setStageZoom] = useState<StageZoom>('fit');
   const [stageTheme, setStageTheme] = useState<'dark' | 'light'>('dark');
   const [stageViewportMode, setStageViewportMode] = useState<StageViewportMode>('16:9');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mobileView, setMobileView] = useState<'stage' | 'inspector' | 'storyboard'>('stage');
 
   // App Theme & Language
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -69,7 +83,6 @@ export default function DashboardPage() {
   useStudioShortcuts({
     activeSlide,
     onSelectSlide: setActiveSlide,
-    onToggleJsonMode: () => setInspectorMode((prev) => (prev === 'form' ? 'json' : 'form')),
     onToggleFullscreen: () => setIsFullscreen((prev) => !prev),
     onToggleCommandPalette: () => setCommandPaletteOpen((prev) => !prev),
   });
@@ -84,6 +97,24 @@ export default function DashboardPage() {
     setLastSavedText(`Đã lưu ${time}`);
   };
 
+  // Real-time quick theme preset switcher handler
+  const handleSelectThemePreset = async (presetKey: string) => {
+    if (!portfolio) return;
+    setPortfolio((prev) => (prev ? { ...prev, themeConfig: presetKey } : null));
+    notifySaved();
+
+    try {
+      await fetchWithAuth(`${API_BASE}/portfolios/me`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...portfolio, themeConfig: presetKey }),
+      });
+      showToast(`Đã áp dụng phong cách ${presetKey}`);
+    } catch {
+      // In-memory update applied
+    }
+  };
+
   // Click-to-edit on preview stage handler (Bidirectional Sync)
   const handleFieldClick = (fieldId: string) => {
     if (
@@ -91,7 +122,6 @@ export default function DashboardPage() {
       fieldId === 'title' ||
       fieldId === 'tagline' ||
       fieldId === 'bio' ||
-      fieldId === 'statusText' ||
       fieldId === 'avatarUrl'
     ) {
       setActiveSlide('cover');
@@ -101,13 +131,15 @@ export default function DashboardPage() {
       setActiveSlide('experience');
     } else if (fieldId === 'skills') {
       setActiveSlide('skills');
+    } else if (fieldId === 'statusText' || fieldId === 'resumeUrl' || fieldId === 'contact') {
+      setActiveSlide('contact');
     }
 
     setFocusedField(fieldId);
 
-    // If on mobile/tablet, switch to inspector tab
-    if (window.innerWidth < 768) {
-      setMobileActiveTab('inspector');
+    // If on mobile, switch to inspector tab automatically
+    if (window.innerWidth < 1024) {
+      setMobileView('inspector');
     }
 
     // Scroll to input and focus after render
@@ -129,7 +161,7 @@ export default function DashboardPage() {
     title: 'Kỹ sư Phần mềm',
     tagline: 'Full-Stack Engineer & Product Builder',
     bio: 'Tập trung kiến tạo các sản phẩm số tinh tế, hiệu năng vượt trội và mang lại giá trị bền vững cho người dùng.',
-    statusText: 'Sẵn sàng hợp tác & tư vấn',
+    statusText: 'Sẵn sàng hợp tác · tư vấn',
     resumeUrl: null,
     themeMode: 'DARK',
     isPublished: true,
@@ -154,7 +186,17 @@ export default function DashboardPage() {
       const res = await fetchWithAuth(`${API_BASE}/portfolios/me`);
       if (res.ok) {
         const data = await res.json();
+        if (data.statusText) {
+          data.statusText = data.statusText.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·');
+        }
         setPortfolio(data);
+        if (data.themeMode) {
+          const isDark = data.themeMode.toUpperCase() !== 'LIGHT';
+          setTheme(isDark ? 'dark' : 'light');
+          setStageTheme(isDark ? 'dark' : 'light');
+          localStorage.setItem('soodfolio-theme', isDark ? 'dark' : 'light');
+          document.documentElement.classList.toggle('dark', isDark);
+        }
         setBackendOffline(false);
       } else {
         if (res.status === 503) {
@@ -249,7 +291,18 @@ export default function DashboardPage() {
 
   // Generic in-memory portfolio field update (WYSIWYG)
   const handleUpdatePortfolioField = (field: keyof PortfolioData, value: any) => {
-    setPortfolio((prev) => (prev ? { ...prev, [field]: value } : null));
+    let finalVal = value;
+    if (field === 'statusText' && typeof value === 'string') {
+      finalVal = value.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·');
+    }
+    if (field === 'themeMode' && typeof value === 'string') {
+      const isDark = value.toUpperCase() !== 'LIGHT';
+      setTheme(isDark ? 'dark' : 'light');
+      setStageTheme(isDark ? 'dark' : 'light');
+      localStorage.setItem('soodfolio-theme', isDark ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', isDark);
+    }
+    setPortfolio((prev) => (prev ? { ...prev, [field]: finalVal } : null));
     notifySaved();
   };
 
@@ -257,15 +310,28 @@ export default function DashboardPage() {
   const handleSaveProfile = async (updated: Partial<PortfolioData>) => {
     if (!portfolio) return;
     setIsSaving(true);
+    if (updated.themeMode) {
+      const isDark = updated.themeMode.toUpperCase() !== 'LIGHT';
+      setTheme(isDark ? 'dark' : 'light');
+      setStageTheme(isDark ? 'dark' : 'light');
+      localStorage.setItem('soodfolio-theme', isDark ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', isDark);
+    }
+    const cleanStatus = updated.statusText
+      ? updated.statusText.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·')
+      : portfolio.statusText
+      ? portfolio.statusText.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·')
+      : portfolio.statusText;
     const payload = {
       title: updated.title ?? portfolio.title,
       fullName: updated.fullName ?? portfolio.fullName,
       tagline: updated.tagline ?? portfolio.tagline,
       bio: updated.bio ?? portfolio.bio,
-      statusText: updated.statusText ?? portfolio.statusText,
+      statusText: cleanStatus,
       avatarUrl: updated.avatarUrl ?? portfolio.avatarUrl,
       resumeUrl: updated.resumeUrl ?? portfolio.resumeUrl,
       themeMode: updated.themeMode ?? portfolio.themeMode,
+      themeConfig: updated.themeConfig ?? portfolio.themeConfig,
       socialLinks: updated.socialLinks ?? portfolio.socialLinks,
       showExperience: portfolio.showExperience,
       showProjects: portfolio.showProjects,
@@ -389,6 +455,19 @@ export default function DashboardPage() {
     } catch {
       // In-memory update applied
     }
+    notifySaved();
+  };
+
+  const handleProjectImported = (project: ProjectDto) => {
+    setPortfolio((prev) => {
+      if (!prev) return null;
+      if (prev.projects.some((p) => p.id === project.id)) return prev;
+      return {
+        ...prev,
+        projects: [...prev.projects, project],
+      };
+    });
+    showToast(`Đã import thành công dự án "${project.title}" từ GitHub!`);
     notifySaved();
   };
 
@@ -560,30 +639,11 @@ export default function DashboardPage() {
     notifySaved();
   };
 
-  // --- Apply Raw JSON Spec ---
-  const handleApplyJson = async (updated: PortfolioData) => {
-    setPortfolio(updated);
-    setIsSaving(true);
-    try {
-      await fetchWithAuth(`${API_BASE}/portfolios/me`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
-      });
-      showToast('Đã áp dụng cấu hình JSON thành công.');
-    } catch {
-      showToast('Đã áp dụng JSON vào bản xem trước Studio');
-    } finally {
-      setIsSaving(false);
-      notifySaved();
-    }
-  };
-
   if (authLoading || (loadingPortfolio && !portfolio)) {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f8fafc] dark:bg-[#080d12] text-slate-600 dark:text-slate-300 font-sans text-sm gap-3">
         <Loader2 className="h-7 w-7 animate-spin text-teal-600 dark:text-teal-400" />
-        <p className="tracking-wide text-xs uppercase font-mono text-slate-500">
+        <p className="text-xs font-sans font-medium text-slate-500">
           Đang khởi tạo SoodFolio Deck Studio...
         </p>
       </div>
@@ -591,12 +651,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-screen max-h-screen w-full bg-[#f8fafc] dark:bg-[#080d12] text-slate-900 dark:text-slate-100 flex flex-col font-sans overflow-hidden">
+    <div className="min-h-screen h-screen w-full bg-[#f8fafc] dark:bg-[#080d12] text-slate-900 dark:text-slate-100 flex flex-col font-sans overflow-hidden">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-3 duration-200">
           <div
-            className={`px-4 py-3 rounded-xl shadow-lg border flex items-center gap-2.5 text-xs font-medium backdrop-blur-md ${
+            className={`px-4 py-3 rounded-xl shadow-lg border flex items-center gap-2.5 text-xs font-sans font-medium backdrop-blur-md ${
               toastMessage.type === 'success'
                 ? 'bg-white/95 dark:bg-[#0c141d]/95 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 shadow-emerald-500/10'
                 : 'bg-white/95 dark:bg-[#0c141d]/95 border-rose-500/40 text-rose-800 dark:text-rose-300 shadow-rose-500/10'
@@ -629,129 +689,176 @@ export default function DashboardPage() {
         onLogout={handleLogout}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         onOpenSnapshots={() => setSnapshotModalOpen(true)}
+        themePreset={portfolio?.themeConfig || 'classic-deck'}
+        onSelectThemePreset={handleSelectThemePreset}
       />
 
-      {/* Mobile / Tablet Segmented Switcher (< md) */}
-      <div className="md:hidden flex items-center justify-center p-2 border-b border-slate-200/80 dark:border-white/[0.07] bg-white/90 dark:bg-[#0c131a]/90 flex-shrink-0">
-        <div className="flex items-center gap-1 p-0.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 w-full max-w-sm">
+      {/* Main Studio 3-Zone Spatial Keynote Workspace */}
+      <div className="flex-1 flex min-h-0 overflow-hidden relative bg-[#f8fafc] dark:bg-[#080d12]">
+        {/* Mobile View Switcher Bar (Visible on viewports < 1024px) */}
+        <div className="lg:hidden absolute top-0 left-0 right-0 z-30 h-10 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#080d12]/95 backdrop-blur-md flex items-center justify-around px-2 text-xs font-sans font-medium">
           <button
             type="button"
-            onClick={() => setMobileActiveTab('inspector')}
-            className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              mobileActiveTab === 'inspector'
-                ? 'bg-white dark:bg-[#111a24] text-teal-600 dark:text-teal-400 shadow-sm'
+            onClick={() => setMobileView('stage')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+              mobileView === 'stage'
+                ? 'bg-teal-500/15 text-teal-700 dark:text-teal-300 font-semibold'
                 : 'text-slate-500 dark:text-slate-400'
             }`}
           >
-            <FileEdit className="h-3.5 w-3.5" />
-            <span>Biên tập Slide</span>
+            <span>Sân Khấu Live</span>
           </button>
-
           <button
             type="button"
-            onClick={() => setMobileActiveTab('stage')}
-            className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              mobileActiveTab === 'stage'
-                ? 'bg-white dark:bg-[#111a24] text-teal-600 dark:text-teal-400 shadow-sm'
+            onClick={() => setMobileView('inspector')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+              mobileView === 'inspector'
+                ? 'bg-teal-500/15 text-teal-700 dark:text-teal-300 font-semibold'
                 : 'text-slate-500 dark:text-slate-400'
             }`}
           >
-            <Monitor className="h-3.5 w-3.5" />
-            <span>Sân khấu Live</span>
+            <span>Thuộc Tính Inspector</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileView('storyboard')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+              mobileView === 'storyboard'
+                ? 'bg-teal-500/15 text-teal-700 dark:text-teal-300 font-semibold'
+                : 'text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            <span>Dải Phim (5)</span>
           </button>
         </div>
-      </div>
 
-      {/* Main Studio Split-Screen Engine (Guaranteed Full Height calc(100vh - 3.5rem)) */}
-      <div className="flex-1 flex overflow-hidden min-h-0 relative">
-        {/* Left Pane: Slide Rail (Desktop Thumbnail Strip) */}
-        <div className="hidden md:flex h-full min-h-0">
+        {/* Zone 1: Left Storyboard Spine (220px fixed rail) */}
+        <div
+          className={`h-full flex-shrink-0 z-10 ${
+            mobileView === 'storyboard'
+              ? 'block absolute inset-0 z-20 bg-[#f4f1ea] dark:bg-[#080d12] pt-10'
+              : 'hidden lg:block'
+          }`}
+        >
           <SlideRail
             activeSlide={activeSlide}
-            onSelectSlide={setActiveSlide}
-            orientation="vertical"
+            onSelectSlide={(slideKey) => {
+              setActiveSlide(slideKey);
+              if (mobileView === 'storyboard') setMobileView('stage');
+            }}
             portfolio={portfolio}
+            onToggleVisibility={handleToggleSection}
           />
         </div>
 
-        {/* Middle Pane: Slide Inspector (Desktop 380px or Full on Mobile when tab === 'inspector') */}
-        <div
-          className={`h-full min-h-0 ${
-            mobileActiveTab === 'inspector' ? 'flex flex-1' : 'hidden'
-          } md:flex md:w-[380px] lg:w-[420px] md:flex-shrink-0 flex-col overflow-hidden`}
+        {/* Zone 2: Center Keynote Stage (Chiếm ~60-65% viewport, blueprint dot-grid bg) */}
+        <section
+          className={`flex-1 min-w-0 h-full flex flex-col bg-[#ede8dd] dark:bg-[#080d12] bg-[radial-gradient(#a8a29e_1.2px,transparent_1.2px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px] relative overflow-hidden select-none ${
+            mobileView === 'stage' ? 'flex pt-10 lg:pt-0' : 'hidden lg:flex'
+          }`}
         >
-          <SlideInspector
-            portfolio={portfolio}
-            activeSlide={activeSlide}
-            inspectorMode={inspectorMode}
-            onToggleInspectorMode={() =>
-              setInspectorMode((prev) => (prev === 'form' ? 'json' : 'form'))
-            }
-            onUpdatePortfolioField={handleUpdatePortfolioField}
-            onSaveProfile={handleSaveProfile}
-            onAddProject={handleAddProject}
-            onUpdateProject={handleUpdateProject}
-            onDeleteProject={handleDeleteProject}
-            onMoveProject={handleMoveProject}
-            onAddExperience={handleAddExperience}
-            onUpdateExperience={handleUpdateExperience}
-            onDeleteExperience={handleDeleteExperience}
-            onMoveExperience={handleMoveExperience}
-            onAddSkill={handleAddSkill}
-            onDeleteSkill={handleDeleteSkill}
-            onToggleSection={handleToggleSection}
-            onApplyJson={handleApplyJson}
-            isSaving={isSaving}
-            lastSavedText={lastSavedText}
-            focusedField={focusedField}
-            onFocusField={setFocusedField}
-            onBlurField={() => setFocusedField(null)}
-          />
-        </div>
-
-        {/* Right Pane: Live Presentation Stage (Flex-1) */}
-        <div
-          className={`h-full min-h-0 ${
-            mobileActiveTab === 'stage' ? 'flex flex-1' : 'hidden'
-          } md:flex flex-1 flex-col overflow-hidden min-w-0`}
-        >
+          {/* Stage Floating Top Toolbar */}
           <StageToolbar
             activeSlide={activeSlide}
             onSelectSlide={setActiveSlide}
             zoom={stageZoom}
             onSetZoom={setStageZoom}
             stageTheme={stageTheme}
-            onToggleStageTheme={() =>
-              setStageTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
-            }
+            onToggleStageTheme={toggleTheme}
             isFullscreen={isFullscreen}
             onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
             viewportMode={stageViewportMode}
             onSetViewportMode={setStageViewportMode}
           />
 
-          <PresentationStage
-            portfolio={portfolio}
-            activeSlide={activeSlide}
-            zoom={stageZoom}
-            stageTheme={stageTheme}
-            viewportMode={stageViewportMode}
-            isFullscreen={isFullscreen}
-            focusedField={focusedField}
-            onFieldClick={handleFieldClick}
-          />
-        </div>
+          {/* Presentation Stage Canvas Center Stage */}
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex items-center justify-center p-3 sm:p-5 lg:p-6 pb-20">
+            <PresentationStage
+              portfolio={portfolio}
+              activeSlide={activeSlide}
+              zoom={stageZoom}
+              stageTheme={stageTheme}
+              viewportMode={stageViewportMode}
+              isFullscreen={isFullscreen}
+              focusedField={focusedField}
+              onFieldClick={handleFieldClick}
+              variant={portfolio?.themeConfig || 'classic-deck'}
+            />
+          </div>
+        </section>
+
+        {/* Zone 3: Right Context Inspector (320px - 360px collapsible rail) */}
+        <aside
+          className={`w-full lg:w-[350px] xl:w-[380px] h-full flex-shrink-0 border-l border-[#d6d0c2] dark:border-white/[0.06] bg-[#f4f1ea] dark:bg-[#0c131a] flex flex-col min-h-0 z-10 ${
+            mobileView === 'inspector' ? 'flex pt-10 lg:pt-0' : 'hidden lg:flex'
+          }`}
+        >
+          {/* Inspector Header / Tab Summary */}
+          <div className="px-4 py-3 border-b border-[#d6d0c2] dark:border-white/[0.06] flex items-center justify-between flex-shrink-0 bg-[#ede8dd] dark:bg-white/[0.01]">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-sans font-bold px-1.5 py-0.5 rounded bg-teal-500/15 text-teal-700 dark:text-teal-300 tabular-nums">
+                {STUDIO_SLIDES.find((s) => s.key === activeSlide)?.number || '01'}
+              </span>
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Thuộc tính Slide
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+              {isSaving ? (
+                <span className="text-teal-500 animate-pulse font-medium">Đang lưu...</span>
+              ) : (
+                <span>{lastSavedText}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Inspector Content (Scrollable) */}
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3.5 sm:p-4">
+            <SlideInspector
+              portfolio={portfolio}
+              activeSlide={activeSlide}
+              onUpdatePortfolioField={handleUpdatePortfolioField}
+              onSaveProfile={handleSaveProfile}
+              onAddProject={handleAddProject}
+              onUpdateProject={handleUpdateProject}
+              onDeleteProject={handleDeleteProject}
+              onMoveProject={handleMoveProject}
+              onProjectImported={handleProjectImported}
+              onAddExperience={handleAddExperience}
+              onUpdateExperience={handleUpdateExperience}
+              onDeleteExperience={handleDeleteExperience}
+              onMoveExperience={handleMoveExperience}
+              onAddSkill={handleAddSkill}
+              onDeleteSkill={handleDeleteSkill}
+              onToggleSection={handleToggleSection}
+              isSaving={isSaving}
+              lastSavedText={lastSavedText}
+              focusedField={focusedField}
+              onFocusField={setFocusedField}
+              onBlurField={() => setFocusedField(null)}
+            />
+          </div>
+        </aside>
       </div>
 
-      {/* Mobile Bottom Slide Dock (< md) */}
-      <div className="md:hidden flex-shrink-0">
-        <SlideRail
-          activeSlide={activeSlide}
-          onSelectSlide={setActiveSlide}
-          orientation="horizontal"
-          portfolio={portfolio}
-        />
-      </div>
+      {/* Fullscreen Review Preview Overlay Modal */}
+      <PreviewModal
+        isOpen={previewModalOpen}
+        onClose={() => setPreviewModalOpen(false)}
+        portfolio={portfolio}
+        activeSlide={activeSlide}
+        onSelectSlide={setActiveSlide}
+        stageTheme={stageTheme}
+        onToggleStageTheme={toggleTheme}
+        zoom={stageZoom}
+        onSetZoom={setStageZoom}
+        viewportMode={stageViewportMode}
+        onSetViewportMode={setStageViewportMode}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
+        onFieldClick={handleFieldClick}
+      />
 
       {/* Command Palette Modal (Cmd+K / Ctrl+K) */}
       <StudioCommandPalette
@@ -761,9 +868,9 @@ export default function DashboardPage() {
         onPublish={handlePublish}
         onCopyLink={handleCopyLink}
         onToggleTheme={toggleTheme}
-        onToggleJsonMode={() => setInspectorMode((prev) => (prev === 'form' ? 'json' : 'form'))}
         onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
         onOpenSnapshots={() => setSnapshotModalOpen(true)}
+        onOpenPreview={() => setPreviewModalOpen(true)}
         username={portfolio?.username || user?.username || 'member'}
         theme={theme}
       />
