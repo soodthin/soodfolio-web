@@ -196,20 +196,20 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="github-import-dialog-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
     >
-      <div className="w-full max-w-2xl rounded-3xl bg-[#0c131a] dark:bg-[#0c131a] border border-white/10 shadow-2xl p-6 text-slate-100 space-y-4 max-h-[88vh] flex flex-col">
+      <div className="w-full max-w-2xl rounded-3xl bg-white dark:bg-[#0c131a] border border-slate-200 dark:border-white/10 shadow-2xl p-6 text-slate-900 dark:text-slate-100 space-y-4 max-h-[88vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between pb-3 border-b border-white/[0.08] flex-shrink-0">
+        <div className="flex items-start justify-between pb-3 border-b border-slate-200/80 dark:border-white/[0.08] flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 flex-shrink-0">
+            <div className="h-10 w-10 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-600 dark:text-teal-400 flex-shrink-0">
               <FolderGit2 className="h-5 w-5 stroke-[2.2]" />
             </div>
             <div>
-              <h2 id="github-import-dialog-title" className="text-base font-bold text-white tracking-tight">
+              <h2 id="github-import-dialog-title" className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
                 Import Repository từ GitHub
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Tự động lấy thông tin mô tả, ngôn ngữ, topics và link demo để tạo Slide dự án.
               </p>
             </div>
@@ -219,7 +219,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Đóng hộp thoại import GitHub"
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.06] cursor-pointer transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] cursor-pointer transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -235,7 +235,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="username"
-                className="w-full pl-24 pr-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs font-sans font-medium text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-500 transition-colors"
+                className="w-full pl-24 pr-3.5 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-xs font-sans font-medium text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-500 focus:bg-white transition-colors"
               />
             </div>
 
@@ -262,7 +262,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="Lọc nhanh theo tên repo hoặc công nghệ..."
-                className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs font-sans font-medium text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-500 transition-colors"
+                className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-xs font-sans font-medium text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-500 focus:bg-white transition-colors"
               />
             </div>
           )}
@@ -270,8 +270,8 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
 
         {/* Error Notification */}
         {error && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 flex-shrink-0">
-            <AlertCircle className="h-4 w-4 text-rose-400 flex-shrink-0" />
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2 flex-shrink-0">
+            <AlertCircle className="h-4 w-4 text-rose-500 dark:text-rose-400 flex-shrink-0" />
             <span className="flex-1">{error}</span>
           </div>
         )}
@@ -280,12 +280,12 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
         <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar min-h-[200px]">
           {loading ? (
             <div className="h-44 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs font-sans">
-              <Loader2 className="h-6 w-6 animate-spin text-teal-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-teal-500 dark:text-teal-400" />
               <span>Đang kết nối GitHub và nạp danh sách repositories...</span>
             </div>
           ) : filteredRepos.length === 0 ? (
-            <div className="h-44 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs font-sans border border-dashed border-white/10 rounded-2xl">
-              <FolderGit2 className="h-6 w-6 text-slate-500" />
+            <div className="h-44 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs font-sans border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
+              <FolderGit2 className="h-6 w-6 text-slate-400 dark:text-slate-500" />
               <span>{repos.length === 0 ? 'Nhập username GitHub và bấm "Tải Repos"' : 'Không có repository nào khớp với bộ lọc'}</span>
             </div>
           ) : (
@@ -300,19 +300,19 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
               return (
                 <div
                   key={repoName}
-                  className="p-4 rounded-2xl bg-[#111a24] border border-white/[0.07] hover:border-teal-400/30 transition-all flex flex-col gap-2.5 group"
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-[#111a24] border border-slate-200 dark:border-white/[0.07] hover:border-teal-500/30 dark:hover:border-teal-400/30 transition-all flex flex-col gap-2.5 group"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-white truncate group-hover:text-teal-300 transition-colors">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate group-hover:text-teal-600 dark:group-hover:text-teal-300 transition-colors">
                           {repoName}
                         </span>
                         <a
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-teal-400 transition-colors"
+                          className="text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
                           title="Mở trên GitHub"
                           aria-label={`Mở repository ${repoName} trên GitHub`}
                         >
@@ -321,7 +321,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                       </div>
 
                       {repo.description && (
-                        <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
                           {repo.description}
                         </p>
                       )}
@@ -333,7 +333,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                       onClick={() => handleImport(repo)}
                       className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-sans font-semibold transition-all cursor-pointer flex-shrink-0 ${
                         isImported
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
                           : 'bg-teal-600 hover:bg-teal-500 text-white shadow-sm shadow-teal-500/20 disabled:opacity-50'
                       }`}
                       aria-label={`Import repository ${repoName} vào slide deck`}
@@ -345,7 +345,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                         </>
                       ) : isImported ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[2.5]" />
+                          <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 stroke-[2.5]" />
                           <span>Đã import</span>
                         </>
                       ) : (
@@ -358,23 +358,23 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                   </div>
 
                   {/* Metadata Tags: Language, Stars, Forks, Topics */}
-                  <div className="flex items-center flex-wrap gap-2 text-xs font-sans text-slate-400 pt-2 border-t border-white/[0.04]">
+                  <div className="flex items-center flex-wrap gap-2 text-xs font-sans text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/80 dark:border-white/[0.04]">
                     {repo.language && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-500/10 text-teal-400 font-medium text-[11px] border border-teal-500/20">
-                        <span className="h-1.5 w-1.5 rounded-full bg-teal-400" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-500/10 text-teal-700 dark:text-teal-400 font-medium text-[11px] border border-teal-500/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-teal-500 dark:bg-teal-400" />
                         <span>{repo.language}</span>
                       </span>
                     )}
 
                     {stars > 0 && (
-                      <span className="inline-flex items-center gap-1 text-amber-400 font-medium text-[11px] tabular-nums">
-                        <Star className="h-3 w-3 fill-amber-400" />
+                      <span className="inline-flex items-center gap-1 text-amber-500 dark:text-amber-400 font-medium text-[11px] tabular-nums">
+                        <Star className="h-3 w-3 fill-amber-500 dark:fill-amber-400" />
                         <span>{stars}</span>
                       </span>
                     )}
 
                     {forks > 0 && (
-                      <span className="inline-flex items-center gap-1 text-slate-400 font-medium text-[11px] tabular-nums">
+                      <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium text-[11px] tabular-nums">
                         <GitFork className="h-3 w-3" />
                         <span>{forks}</span>
                       </span>
@@ -384,7 +384,7 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
                       repo.topics.slice(0, 3).map((topic) => (
                         <span
                           key={topic}
-                          className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 text-slate-300 font-medium text-[11px]"
+                          className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-medium text-[11px]"
                         >
                           #{topic}
                         </span>
@@ -397,12 +397,12 @@ export const GitHubImportModal: React.FC<GitHubImportModalProps> = ({
         </div>
 
         {/* Footer info */}
-        <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs text-slate-400 font-sans flex-shrink-0">
-          <span>Đã tìm thấy <strong className="text-white tabular-nums">{filteredRepos.length}</strong> repositories</span>
+        <div className="pt-3 border-t border-slate-200/80 dark:border-white/[0.08] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-sans flex-shrink-0">
+          <span>Đã tìm thấy <strong className="text-slate-900 dark:text-white tabular-nums">{filteredRepos.length}</strong> repositories</span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-slate-300 font-sans font-medium cursor-pointer transition-colors"
+            className="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-700 dark:text-slate-300 font-sans font-medium cursor-pointer transition-colors"
           >
             Đóng
           </button>

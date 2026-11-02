@@ -5,20 +5,15 @@ import { PortfolioData, SocialLinkDto } from '@/types/portfolio';
 import {
   User,
   Sparkles,
-  Link2,
   Plus,
   Trash2,
-  FileText,
-  Upload,
-  Check,
   Globe,
   Share2,
-  ExternalLink,
   Code2,
   Briefcase,
-  BadgeCheck,
   Camera,
 } from 'lucide-react';
+import { AiPolishDialog } from '../AiPolishDialog';
 
 interface CoverInspectorProps {
   portfolio: PortfolioData | null;
@@ -41,6 +36,7 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
 }) => {
   const [inputUrl, setInputUrl] = useState('');
   const [customLabel, setCustomLabel] = useState('');
+  const [aiPolishOpen, setAiPolishOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!portfolio) return null;
@@ -96,19 +92,13 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
   };
 
   const handleRemoveSocialLink = (index: number) => {
-    const newLinks = (portfolio.socialLinks || []).filter((_, i) => i !== index);
-    onUpdateField('socialLinks', newLinks);
+    const updated = (portfolio.socialLinks || []).filter((_, i) => i !== index);
+    onUpdateField('socialLinks', updated);
   };
 
-  // Avatar file upload handler
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Vui lòng chọn ảnh nhỏ hơn 2MB để tối ưu tốc độ tải trang.');
-      return;
-    }
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -121,259 +111,226 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
 
   const getPlatformIcon = (platform: string) => {
     const p = platform.toLowerCase();
-    if (p.includes('github') || p.includes('git')) return <Code2 className="h-3.5 w-3.5 text-current" />;
-    if (p.includes('linkedin')) return <Briefcase className="h-3.5 w-3.5 text-current" />;
-    if (p.includes('twitter') || p.includes('x')) return <Share2 className="h-3.5 w-3.5 text-current" />;
-    return <Globe className="h-3.5 w-3.5 text-current" />;
+    if (p.includes('github') || p.includes('git')) return <Code2 className="h-3 w-3 text-current" />;
+    if (p.includes('linkedin')) return <Briefcase className="h-3 w-3 text-current" />;
+    if (p.includes('twitter') || p.includes('x')) return <Share2 className="h-3 w-3 text-current" />;
+    return <Globe className="h-3 w-3 text-current" />;
   };
 
   return (
-    <div className="w-full space-y-6">
-      {/* Header Bar */}
-      <div className="pb-4 border-b border-slate-200/80 dark:border-white/[0.08]">
-        <div className="flex items-center gap-2 text-xs font-sans font-medium text-teal-600 dark:text-teal-400">
-          <span>Slide 01</span>
-          <span>·</span>
-          <span>Identity & Hero Cover</span>
-        </div>
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
-          Hồ sơ Định danh & Mở đầu Slide Deck
-        </h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Thiết lập thông tin đại diện chuyên nghiệp, định vị chuyên môn và các kênh liên hệ trực tiếp.
-        </p>
+    <div className="w-full space-y-4 font-sans text-xs">
+      {/* Compact Section Header */}
+      <div className="pb-2 border-b border-[#d6d0c2] dark:border-white/[0.06] flex items-center justify-between">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-teal-700 dark:text-teal-400 font-bold">
+          Slide 01 · Identity & Cover
+        </span>
+        <span className="text-[10px] text-stone-600 dark:text-slate-400 font-mono">Định danh</span>
       </div>
 
-      {/* Two-Column Studio Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column (5 Cols): Visual Identity Card Showcase */}
-        <div className="lg:col-span-5 space-y-5">
-          <div className="rounded-3xl bg-white dark:bg-[#0c131a] border border-slate-200/80 dark:border-white/[0.08] p-6 shadow-sm space-y-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-sans font-semibold text-slate-500">
-                Thẻ Danh Thiếp Kỹ Thuật Số
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-sans font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Live Card</span>
-              </span>
-            </div>
-
-            {/* Avatar Showcase with direct action */}
-            <div className="flex flex-col items-center text-center space-y-3 pt-2">
-              <div className="relative group">
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="h-28 w-28 rounded-3xl bg-teal-500/10 border-2 border-teal-500/30 overflow-hidden flex items-center justify-center text-teal-600 dark:text-teal-400 shadow-md cursor-pointer transition-transform group-hover:scale-105"
-                  title="Nhấp để tải ảnh đại diện mới"
-                >
-                  {portfolio.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={portfolio.avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
-                  ) : (
-                    <User className="h-12 w-12 stroke-[1.5]" />
-                  )}
-                  <div className="absolute inset-0 rounded-3xl bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[11px] font-semibold gap-1 transition-opacity">
-                    <Camera className="h-5 w-5" />
-                    <span>Đổi ảnh</span>
-                  </div>
-                </div>
-              </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  {portfolio.fullName || 'Tên hiển thị'}
-                </h3>
-                <p className="text-xs font-semibold text-teal-600 dark:text-teal-400 mt-0.5">
-                  {portfolio.tagline || 'Định vị chuyên môn (Tagline)'}
-                </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  {portfolio.title || 'Tiêu đề Portfolio'}
-                </p>
-              </div>
-
-              {/* Status Pill Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-sans font-medium text-slate-700 dark:text-slate-300">
-                <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
-                <span>{portfolio.statusText || 'Sẵn sàng hợp tác & tư vấn'}</span>
-              </div>
-            </div>
-
-            {/* Social Links Chips Showcase */}
-            <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-white/[0.06]">
-              <span className="text-[11px] font-sans font-semibold text-slate-500 dark:text-slate-400">
-                Mạng lưới liên kết ({portfolio.socialLinks?.length || 0})
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {portfolio.socialLinks && portfolio.socialLinks.length > 0 ? (
-                  portfolio.socialLinks.map((link, idx) => (
-                    <div
-                      key={idx}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-xs text-slate-800 dark:text-slate-200 font-sans"
-                    >
-                      <span className="text-teal-600 dark:text-teal-400">
-                        {getPlatformIcon(link.platform)}
-                      </span>
-                      <span className="font-medium truncate max-w-[140px]">{link.label || link.platform}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSocialLink(idx)}
-                        className="text-slate-400 hover:text-rose-500 cursor-pointer ml-1"
-                        title="Xoá liên kết"
-                        aria-label={`Xoá liên kết ${link.platform}`}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400 italic">Chưa có liên kết mạng xã hội nào.</p>
-                )}
-              </div>
-            </div>
+      {/* Avatar Compact Row */}
+      <div className="p-3 rounded-xl bg-[#fbfaf7] dark:bg-white/[0.02] border border-[#d6d0c2] dark:border-white/[0.06] shadow-xs flex items-center gap-3">
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className="h-12 w-12 rounded-xl bg-teal-500/10 border border-teal-500/30 overflow-hidden flex items-center justify-center text-teal-600 dark:text-teal-400 shrink-0 cursor-pointer relative group hover:border-teal-400 transition-colors"
+          title="Nhấp để thay đổi ảnh đại diện"
+        >
+          {portfolio.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={portfolio.avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+          ) : (
+            <User className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+          )}
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+            <Camera className="h-3.5 w-3.5" />
           </div>
         </div>
-
-        {/* Right Column (7 Cols): Detailed Form Fields */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Card: Basic Identity */}
-          <div className="rounded-3xl bg-white dark:bg-[#0c131a] border border-slate-200/80 dark:border-white/[0.08] p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/[0.06] pb-2">
-              Thông Tin Định Danh & Chức Danh
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Họ và tên hiển thị <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  id="field-fullName"
-                  type="text"
-                  required
-                  value={portfolio.fullName || ''}
-                  onChange={(e) => onUpdateField('fullName', e.target.value)}
-                  onFocus={() => onFocusField?.('fullName')}
-                  onBlur={onBlurField}
-                  placeholder="VD: Thái Đỗ Thịnh"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#111a24] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Tiêu đề Deck / Portfolio <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  id="field-title"
-                  type="text"
-                  required
-                  value={portfolio.title || ''}
-                  onChange={(e) => onUpdateField('title', e.target.value)}
-                  onFocus={() => onFocusField?.('title')}
-                  onBlur={onBlurField}
-                  placeholder="VD: THÁI ĐỖ THỊNH"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#111a24] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-teal-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Định vị chuyên môn (Tagline)
-              </label>
-              <input
-                id="field-tagline"
-                type="text"
-                value={portfolio.tagline || ''}
-                onChange={(e) => onUpdateField('tagline', e.target.value)}
-                onFocus={() => onFocusField?.('tagline')}
-                onBlur={onBlurField}
-                placeholder="VD: SOFTWARE ENGINEER · FULL-STACK DEVELOPER"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#111a24] border border-slate-200 dark:border-white/10 text-teal-700 dark:text-teal-400 text-xs font-semibold focus:outline-none focus:border-teal-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Trạng thái hợp tác (Status Badge)
-              </label>
-              <input
-                id="field-statusText"
-                type="text"
-                value={portfolio.statusText || ''}
-                onChange={(e) => onUpdateField('statusText', e.target.value)}
-                onFocus={() => onFocusField?.('statusText')}
-                onBlur={onBlurField}
-                placeholder="VD: Sẵn sàng nhận dự án tư vấn / Full-time"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#111a24] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-teal-500"
-              />
-            </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-stone-900 dark:text-slate-100 text-xs truncate">
+            {portfolio.fullName || 'Chưa đặt tên'}
           </div>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="text-[11px] text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-semibold cursor-pointer transition-colors"
+          >
+            Đổi ảnh đại diện
+          </button>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
 
-          {/* Card: Bio Statement */}
-          <div className="rounded-3xl bg-white dark:bg-[#0c131a] border border-slate-200/80 dark:border-white/[0.08] p-6 shadow-sm space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/[0.06] pb-2">
-              Tuyên Ngôn Nghề Nghiệp & Giới Thiệu (Bio Statement)
-            </h3>
-            <div>
-              <textarea
-                id="field-bio"
-                rows={4}
-                value={portfolio.bio || ''}
-                onChange={(e) => onUpdateField('bio', e.target.value)}
-                onFocus={() => onFocusField?.('bio')}
-                onBlur={onBlurField}
-                placeholder="Tập trung kiến tạo các sản phẩm số tinh tế, hiệu năng vượt trội và mang lại giá trị bền vững cho người dùng..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#111a24] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs leading-relaxed focus:outline-none focus:border-teal-500 resize-none"
-              />
-              <p className="text-[11px] text-slate-400 mt-1">
-                Đoạn văn này xuất hiện trực tiếp tại vị trí trung tâm của Slide 01 để gây ấn tượng đầu tiên với người tuyển dụng và đối tác.
-              </p>
-            </div>
-          </div>
+      {/* Fields: Core Identity */}
+      <div className="space-y-3">
+        <div>
+          <label className="block text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-slate-300 font-semibold mb-1">
+            Họ và tên <span className="text-rose-500">*</span>
+          </label>
+          <input
+            id="field-fullName"
+            type="text"
+            required
+            value={portfolio.fullName || ''}
+            onChange={(e) => onUpdateField('fullName', e.target.value)}
+            onFocus={() => onFocusField?.('fullName')}
+            onBlur={onBlurField}
+            placeholder="VD: Thái Đỗ Thịnh"
+            className="w-full px-3 py-2 rounded-lg bg-[#ede8dd]/50 dark:bg-[#080d12] border border-[#d6d0c2] dark:border-white/10 text-[#202124] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-600 text-xs font-semibold focus:outline-none focus:bg-[#fbfaf7] focus:border-teal-600 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-600/20 shadow-xs transition-colors"
+          />
+        </div>
 
-          {/* Card: Add Social Links */}
-          <div className="rounded-3xl bg-white dark:bg-[#0c131a] border border-slate-200/80 dark:border-white/[0.08] p-6 shadow-sm space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/[0.06] pb-2">
-              Thêm Liên Kết Mạng Xã Hội
-            </h3>
-            <div className="flex flex-col sm:flex-row items-center gap-2.5">
-              <input
-                type="text"
-                value={inputUrl}
-                onChange={(e) => setInputUrl(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddSocialLink();
-                  }
-                }}
-                placeholder="Dán link GitHub, LinkedIn, Portfolio... (VD: github.com/username)"
-                className="w-full sm:flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#111a24] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-teal-500 text-xs"
-              />
+        <div>
+          <label className="block text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-slate-300 font-semibold mb-1">
+            Tiêu đề Slide Deck <span className="text-rose-500">*</span>
+          </label>
+          <input
+            id="field-title"
+            type="text"
+            required
+            value={portfolio.title || ''}
+            onChange={(e) => onUpdateField('title', e.target.value)}
+            onFocus={() => onFocusField?.('title')}
+            onBlur={onBlurField}
+            placeholder="VD: THÁI ĐỖ THỊNH"
+            className="w-full px-3 py-2 rounded-lg bg-[#ede8dd]/50 dark:bg-[#080d12] border border-[#d6d0c2] dark:border-white/10 text-[#202124] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-600 text-xs font-semibold focus:outline-none focus:bg-[#fbfaf7] focus:border-teal-600 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-600/20 shadow-xs transition-colors"
+          />
+        </div>
 
-              <button
-                type="button"
-                onClick={handleAddSocialLink}
-                disabled={!inputUrl.trim()}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-sans font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 flex-shrink-0"
+        <div>
+          <label className="block text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-slate-300 font-semibold mb-1">
+            Định vị chuyên môn (Tagline)
+          </label>
+          <input
+            id="field-tagline"
+            type="text"
+            value={portfolio.tagline || ''}
+            onChange={(e) => onUpdateField('tagline', e.target.value)}
+            onFocus={() => onFocusField?.('tagline')}
+            onBlur={onBlurField}
+            placeholder="VD: SOFTWARE ENGINEER · FULL-STACK DEVELOPER"
+            className="w-full px-3 py-2 rounded-lg bg-[#ede8dd]/50 dark:bg-[#080d12] border border-[#d6d0c2] dark:border-white/10 text-teal-800 dark:text-teal-400 placeholder:text-stone-400 dark:placeholder:text-slate-600 text-xs font-semibold focus:outline-none focus:bg-[#fbfaf7] focus:border-teal-600 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-600/20 shadow-xs transition-colors"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-slate-300 font-semibold mb-1">
+            Trạng thái hợp tác (Status Badge)
+          </label>
+          <input
+            id="field-statusText"
+            type="text"
+            value={(portfolio.statusText || '').replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·')}
+            onChange={(e) => onUpdateField('statusText', e.target.value.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·'))}
+            onFocus={() => onFocusField?.('statusText')}
+            onBlur={onBlurField}
+            placeholder="VD: Sẵn sàng hợp tác · Full-time"
+            className="w-full px-3 py-2 rounded-lg bg-[#ede8dd]/50 dark:bg-[#080d12] border border-[#d6d0c2] dark:border-white/10 text-[#202124] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-600 text-xs focus:outline-none focus:bg-[#fbfaf7] focus:border-teal-600 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-600/20 shadow-xs transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Field: Bio Statement with AI Polish Trigger */}
+      <div className="pt-2 border-t border-[#d6d0c2] dark:border-white/[0.06] space-y-1.5">
+        <div className="flex items-center justify-between">
+          <label className="text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-slate-300 font-semibold">
+            Tuyên ngôn bản thân (Bio)
+          </label>
+          <button
+            type="button"
+            onClick={() => setAiPolishOpen(true)}
+            disabled={!portfolio.bio?.trim()}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-sans font-medium text-teal-800 dark:text-teal-300 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 transition-all cursor-pointer disabled:opacity-40"
+            title="Tối ưu tuyên ngôn bằng Google X-Y-Z"
+          >
+            <Sparkles className="h-3 w-3 text-teal-600 dark:text-teal-400" />
+            <span>AI Polish</span>
+          </button>
+        </div>
+        <textarea
+          id="field-bio"
+          rows={4}
+          value={portfolio.bio || ''}
+          onChange={(e) => onUpdateField('bio', e.target.value)}
+          onFocus={() => onFocusField?.('bio')}
+          onBlur={onBlurField}
+          placeholder="Tập trung kiến tạo các sản phẩm số tinh tế, hiệu năng vượt trội..."
+          className="w-full px-3 py-2 rounded-lg bg-[#ede8dd]/50 dark:bg-[#080d12] border border-[#d6d0c2] dark:border-white/10 text-[#202124] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-600 text-xs leading-relaxed focus:outline-none focus:bg-[#fbfaf7] focus:border-teal-600 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-600/20 shadow-xs transition-colors resize-none font-sans"
+        />
+      </div>
+
+      {/* Social Links List */}
+      <div className="pt-2 border-t border-[#d6d0c2] dark:border-white/[0.06] space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-slate-300 font-semibold">
+            Kênh liên kết ({portfolio.socialLinks?.length || 0})
+          </span>
+        </div>
+
+        {/* Existing links */}
+        <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
+          {portfolio.socialLinks && portfolio.socialLinks.length > 0 ? (
+            portfolio.socialLinks.map((link, idx) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#fbfaf7] dark:bg-white/[0.03] border border-[#d6d0c2] dark:border-white/[0.06] text-xs text-stone-800 dark:text-slate-300 shadow-xs"
               >
-                <Plus className="h-4 w-4 stroke-[2.2]" />
-                <span>Thêm Link</span>
-              </button>
-            </div>
-          </div>
+                <div className="flex items-center gap-2 truncate">
+                  <span className="text-teal-600 dark:text-teal-400 shrink-0">{getPlatformIcon(link.platform)}</span>
+                  <span className="font-medium truncate text-[11px]">{link.label || link.platform}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveSocialLink(idx)}
+                  className="text-stone-400 hover:text-rose-500 cursor-pointer p-0.5 transition-colors"
+                  title="Xoá liên kết"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-[11px] text-stone-500 italic py-1">Chưa có liên kết nào.</p>
+          )}
+        </div>
+
+        {/* Add link input */}
+        <div className="flex items-center gap-1.5 pt-1">
+          <input
+            type="text"
+            value={inputUrl}
+            onChange={(e) => setInputUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddSocialLink();
+              }
+            }}
+            placeholder="VD: github.com/username"
+            className="flex-1 px-2.5 py-1.5 rounded-lg bg-[#ede8dd]/50 dark:bg-[#080d12] border border-[#d6d0c2] dark:border-white/10 text-[#202124] dark:text-slate-100 placeholder:text-stone-400 dark:placeholder:text-slate-600 text-xs focus:outline-none focus:bg-[#fbfaf7] focus:border-teal-600 dark:focus:border-teal-400 focus:ring-1 focus:ring-teal-600/20 shadow-xs"
+          />
+          <button
+            type="button"
+            onClick={handleAddSocialLink}
+            disabled={!inputUrl.trim()}
+            className="px-2.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-sans font-semibold text-xs transition-colors cursor-pointer disabled:opacity-40"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
+
+      <AiPolishDialog
+        isOpen={aiPolishOpen}
+        onClose={() => setAiPolishOpen(false)}
+        rawText={portfolio.bio || ''}
+        field="bio"
+        onApply={(refinedText) => onUpdateField('bio', refinedText)}
+      />
     </div>
   );
 };

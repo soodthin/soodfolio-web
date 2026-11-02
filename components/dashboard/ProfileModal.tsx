@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, User, AlertCircle } from 'lucide-react';
@@ -49,7 +49,7 @@ export function ProfileModal({ isOpen, onClose, portfolio, onSaved }: ProfileMod
       title: title.trim(),
       tagline: tagline.trim() || null,
       bio: bio.trim() || null,
-      statusText: statusText.trim() || null,
+      statusText: statusText.trim().replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·') || null,
       resumeUrl: resumeUrl.trim() || null,
       themeMode: portfolio?.themeMode || 'DARK',
       showExperience: portfolio?.showExperience ?? true,
@@ -85,18 +85,18 @@ export function ProfileModal({ isOpen, onClose, portfolio, onSaved }: ProfileMod
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#11131a] border border-white/10 shadow-2xl p-6 sm:p-8 space-y-6 text-slate-200"
+        className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#11131a] border border-slate-200 dark:border-white/10 shadow-2xl p-6 sm:p-8 space-y-6 text-slate-900 dark:text-slate-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200/80 dark:border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-teal-400/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
+            <div className="h-8 w-8 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-600 dark:text-teal-400">
               <User className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight">Edit Identity & Hero Slide</h3>
-              <p className="text-xs text-slate-400 font-mono">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Edit Identity &amp; Hero Slide</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-mono">
                 Update your professional header, elevator bio, and status.
               </p>
             </div>
@@ -105,7 +105,7 @@ export function ProfileModal({ isOpen, onClose, portfolio, onSaved }: ProfileMod
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+            className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -113,7 +113,7 @@ export function ProfileModal({ isOpen, onClose, portfolio, onSaved }: ProfileMod
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono flex items-center gap-2.5">
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs font-mono flex items-center gap-2.5">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -122,9 +122,9 @@ export function ProfileModal({ isOpen, onClose, portfolio, onSaved }: ProfileMod
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
           <div className="space-y-1.5">
-            <label className="text-slate-300 font-semibold flex items-center justify-between">
+            <label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center justify-between">
               <span>PORTFOLIO TITLE / NAME *</span>
-              <span className="text-[10px] text-slate-400">Required</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">Required</span>
             </label>
             <input
               type="text"
@@ -132,70 +132,70 @@ export function ProfileModal({ isOpen, onClose, portfolio, onSaved }: ProfileMod
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. THAI DO THINH"
-              className="w-full h-10 px-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs"
+              className="w-full h-10 px-3.5 rounded-xl bg-white dark:bg-[#080d12] border border-slate-200 dark:border-white/10 focus:border-teal-500 dark:focus:border-teal-400/60 focus:outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-xs"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-slate-300 font-semibold">HERO TAGLINE</label>
+            <label className="text-slate-700 dark:text-slate-300 font-semibold">HERO TAGLINE</label>
             <input
               type="text"
               value={tagline}
               onChange={(e) => setTagline(e.target.value)}
-              placeholder="e.g. SOFTWARE ENGINEER // FULL-STACK DEVELOPER"
-              className="w-full h-10 px-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs"
+              placeholder="e.g. SOFTWARE ENGINEER · FULL-STACK DEVELOPER"
+              className="w-full h-10 px-3.5 rounded-xl bg-white dark:bg-[#080d12] border border-slate-200 dark:border-white/10 focus:border-teal-500 dark:focus:border-teal-400/60 focus:outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-xs"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-slate-300 font-semibold">AVAILABILITY / STATUS TEXT</label>
+              <label className="text-slate-700 dark:text-slate-300 font-semibold">AVAILABILITY · STATUS TEXT</label>
               <input
                 type="text"
-                value={statusText}
-                onChange={(e) => setStatusText(e.target.value)}
-                placeholder="AVAILABLE FOR ROLES // READY TO DEPLOY"
-                className="w-full h-10 px-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs"
+                value={(statusText || '').replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·')}
+                onChange={(e) => setStatusText(e.target.value.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·'))}
+                placeholder="AVAILABLE FOR ROLES · READY TO DEPLOY"
+                className="w-full h-10 px-3.5 rounded-xl bg-white dark:bg-[#080d12] border border-slate-200 dark:border-white/10 focus:border-teal-500 dark:focus:border-teal-400/60 focus:outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-slate-300 font-semibold">RESUME / CV URL</label>
+              <label className="text-slate-700 dark:text-slate-300 font-semibold">RESUME / CV URL</label>
               <input
                 type="text"
                 value={resumeUrl}
                 onChange={(e) => setResumeUrl(e.target.value)}
                 placeholder="https://drive.google.com/... or #contact"
-                className="w-full h-10 px-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs"
+                className="w-full h-10 px-3.5 rounded-xl bg-white dark:bg-[#080d12] border border-slate-200 dark:border-white/10 focus:border-teal-500 dark:focus:border-teal-400/60 focus:outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-xs"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-slate-300 font-semibold">ELEVATOR BIO / HERO OVERVIEW</label>
+            <label className="text-slate-700 dark:text-slate-300 font-semibold">ELEVATOR BIO / HERO OVERVIEW</label>
             <textarea
               rows={4}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Final-year Computer Science student with experience building and deploying production systems..."
-              className="w-full p-3.5 rounded-xl bg-[#161923] border border-white/10 focus:border-teal-400/60 focus:outline-none text-white text-xs font-sans leading-relaxed resize-none"
+              className="w-full p-3.5 rounded-xl bg-white dark:bg-[#080d12] border border-slate-200 dark:border-white/10 focus:border-teal-500 dark:focus:border-teal-400/60 focus:outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-xs font-sans leading-relaxed resize-none"
             />
           </div>
 
           {/* Action Footer */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200/80 dark:border-white/[0.08]">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-10 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white font-medium transition-colors cursor-pointer"
+              className="h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="h-10 px-5 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-bold flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-teal-400/10 active:scale-95 disabled:opacity-50"
+              className="h-10 px-5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm shadow-teal-500/20 active:scale-95 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

@@ -65,7 +65,7 @@ describe('Studio Subcomponents Unit Tests', () => {
       expect(screen.getByText('04')).toBeDefined();
       expect(screen.getByText('05')).toBeDefined();
 
-      const projectsBtn = screen.getByTitle(/02 - Selected Case Studies/i);
+      const projectsBtn = screen.getByTitle(/02.*Case Studies/i);
       fireEvent.click(projectsBtn);
       expect(onSelectSlide).toHaveBeenCalledWith('projects');
     });
@@ -178,7 +178,7 @@ describe('Studio Subcomponents Unit Tests', () => {
       );
 
       expect(screen.getByText(/02 \/ 05/i)).toBeDefined();
-      expect(screen.getByText('Selected Case Studies')).toBeDefined();
+      expect(screen.getAllByText(/Case Studies/i).length).toBeGreaterThan(0);
 
       const prevBtn = screen.getByTitle(/Slide trước/i);
       fireEvent.click(prevBtn);

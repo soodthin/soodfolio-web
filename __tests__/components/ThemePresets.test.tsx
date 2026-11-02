@@ -443,6 +443,11 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
       // Terminal CLI banners exist
       expect(screen.getByText(/soodfolio@production:~\$ init/)).toBeDefined();
       expect(screen.getByText(/\$ git show project-01 --stat/)).toBeDefined();
+      expect(screen.getByText(/TTY: \/dev\/pts\/0/)).toBeDefined();
+      expect(screen.getByText(/SYS_REG\.METRIC_01:/)).toBeDefined();
+      expect(screen.getByText(/SYS_RES\.LANGUAGES:/)).toBeDefined();
+      expect(screen.getByText(/├── backend\/spring-boot-api\//)).toBeDefined();
+      expect(screen.getByText(/\.\/run-demo\.sh/)).toBeDefined();
     });
 
     it('renders distinct editorial rhythm and typography for Editorial Clean', () => {
@@ -460,6 +465,9 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
       // Editorial monograph markers
       expect(screen.getByText(/Volume 2026 · Curated Monograph/)).toBeDefined();
       expect(screen.getByText(/Feature Story · Project 01/)).toBeDefined();
+      expect(screen.getByText(/THE MONOGRAPH/)).toBeDefined();
+      expect(screen.getByText(/CHAPTER 01 · ARCHITECTURAL PROLOGUE/)).toBeDefined();
+      expect(screen.getByText(/SECTION 04 · INDEX OF PROFICIENCIES/)).toBeDefined();
     });
 
     it('renders distinct full-width showcase layout for Spotlight Focus', () => {
@@ -477,6 +485,12 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
       // Project 01 has full-width flex container
       const project01 = container.querySelector('#project-01');
       expect(project01?.className).toContain('flex flex-col gap-8 w-full');
+
+      // Keynote elements
+      expect(screen.getByText(/STAGE 01 · KEYNOTE SHOWCASE/)).toBeDefined();
+      expect(screen.getByText(/Keynote Speaker & Builder/)).toBeDefined();
+      expect(screen.getByText(/KEYNOTE ACT 02 · CAREER TRAJECTORY/)).toBeDefined();
+      expect(screen.getByText(/KEYNOTE CURTAIN CALL · GRAND FINALE/)).toBeDefined();
     });
   });
 
@@ -531,6 +545,68 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
 
       expect(screen.getByText('> projects --selected')).toBeDefined();
       expect(screen.getByText('> proj_01')).toBeDefined();
+    });
+
+    it('renders authentic art direction signatures across studio slides', () => {
+      // Slide 01 Terminal
+      const { unmount: unmount1 } = render(
+        <PresentationStage
+          portfolio={mockPortfolio}
+          activeSlide="cover"
+          zoom="fit"
+          stageTheme="dark"
+          viewportMode="16:9"
+          isFullscreen={false}
+          variant="terminal-matrix"
+        />
+      );
+      expect(screen.getByText(/\[SYS_STAT\] TTY: \/dev\/pts\/0/)).toBeDefined();
+      unmount1();
+
+      // Slide 01 Editorial
+      const { unmount: unmount2 } = render(
+        <PresentationStage
+          portfolio={mockPortfolio}
+          activeSlide="cover"
+          zoom="fit"
+          stageTheme="dark"
+          viewportMode="16:9"
+          isFullscreen={false}
+          variant="editorial-clean"
+        />
+      );
+      expect(screen.getByText(/Plate 01 · Studio Monograph/)).toBeDefined();
+      unmount2();
+
+      // Slide 01 Spotlight
+      const { unmount: unmount3 } = render(
+        <PresentationStage
+          portfolio={mockPortfolio}
+          activeSlide="cover"
+          zoom="fit"
+          stageTheme="dark"
+          viewportMode="16:9"
+          isFullscreen={false}
+          variant="spotlight-focus"
+        />
+      );
+      expect(screen.getByText(/Keynote Spotlight · WWDC Edition/)).toBeDefined();
+      unmount3();
+
+      // Slide 05 Settings
+      const { unmount: unmount4 } = render(
+        <PresentationStage
+          portfolio={mockPortfolio}
+          activeSlide="settings"
+          zoom="fit"
+          stageTheme="dark"
+          viewportMode="16:9"
+          isFullscreen={false}
+          variant="terminal-matrix"
+        />
+      );
+      expect(screen.getByText(/> sysctl --load \/etc\/soodfolio\/config\.conf/)).toBeDefined();
+      unmount4();
     });
   });
 });

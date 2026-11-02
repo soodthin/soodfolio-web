@@ -8,6 +8,7 @@ import { ProjectsInspector } from './inspectors/ProjectsInspector';
 import { ExperienceInspector } from './inspectors/ExperienceInspector';
 import { SkillsInspector } from './inspectors/SkillsInspector';
 import { SettingsInspector } from './inspectors/SettingsInspector';
+import { ContactInspector } from './inspectors/ContactInspector';
 
 interface SlideInspectorProps {
   portfolio: PortfolioData | null;
@@ -137,6 +138,18 @@ export const SlideInspector: React.FC<SlideInspectorProps> = ({
           onAddSkill={onAddSkill}
           onDeleteSkill={onDeleteSkill}
           isSaving={isSaving}
+        />
+      )}
+
+      {activeSlide === 'contact' && (
+        <ContactInspector
+          portfolio={portfolio}
+          onUpdateField={onUpdatePortfolioField}
+          onSaveProfile={onSaveProfile}
+          isSaving={isSaving}
+          focusedField={focusedField}
+          onFocusField={onFocusField}
+          onBlurField={onBlurField}
         />
       )}
 
