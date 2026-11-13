@@ -27,6 +27,9 @@ e2e/screenshots/
 
 # misc
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
 *.pem
 
 # debug
@@ -37,6 +40,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
