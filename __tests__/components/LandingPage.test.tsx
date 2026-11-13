@@ -19,8 +19,11 @@ vi.mock('@/context/AuthContext', () => ({
 describe('LandingPage Pitch-Inspired & SoodFolio Matte Design Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (authContext.useAuth as any).mockReturnValue({
+    vi.mocked(authContext.useAuth).mockReturnValue({
       user: null,
+      token: null,
+      refreshSession: vi.fn(),
+      login: vi.fn(),
       isAuthenticated: false,
       isLoading: false,
       logout: vi.fn(),

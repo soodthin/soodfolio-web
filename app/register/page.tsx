@@ -92,6 +92,7 @@ export default function RegisterPage() {
     try {
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: cleanFullName,

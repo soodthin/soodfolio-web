@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('soodfolio_token')?.value;
+  const sessionFlag = request.cookies.get('soodfolio_session')?.value;
+  const legacyToken = request.cookies.get('soodfolio_token')?.value;
+  const hasSession = sessionFlag === '1' || !!legacyToken;
   const { pathname } = request.nextUrl;
 
   // 1. Protected Route: /dashboard and its sub-paths
-  if (pathname.startsWith('/dashboard')) {
-    if (!token) {
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/studio')) {
+    if (!hasSession) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
@@ -16,7 +18,7 @@ export function middleware(request: NextRequest) {
 
   // 2. Auth Routes: /login, /register (Already authenticated users should go to dashboard)
   if (pathname === '/login' || pathname === '/register') {
-    if (token) {
+    if (hasSession) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
@@ -25,5 +27,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/register'],
+  matcher: ['/dashboard/:path*', '/studio/:path*', '/login', '/register'],
 };

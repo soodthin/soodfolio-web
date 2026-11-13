@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { PortfolioData, SocialLinkDto } from '@/types/portfolio';
 import {
   User,
@@ -12,8 +12,13 @@ import {
   Code2,
   Briefcase,
   Camera,
+  Loader2,
+  Save,
+  CheckCircle2,
 } from 'lucide-react';
 import { AiPolishDialog } from '../AiPolishDialog';
+import { fetchWithAuth } from '@/lib/apiClient';
+import { API_BASE } from '@/lib/auth';
 
 interface CoverInspectorProps {
   portfolio: PortfolioData | null;
@@ -37,7 +42,27 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
   const [inputUrl, setInputUrl] = useState('');
   const [customLabel, setCustomLabel] = useState('');
   const [aiPolishOpen, setAiPolishOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced auto-save 800ms
+  const triggerDebouncedSave = useCallback((patch: Partial<PortfolioData>) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      onSaveProfile(patch);
+    }, 800);
+  }, [onSaveProfile]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   if (!portfolio) return null;
 
@@ -87,6 +112,7 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
       { platform, url: cleanUrl, label },
     ];
     onUpdateField('socialLinks', newLinks);
+    onSaveProfile({ socialLinks: newLinks });
     setInputUrl('');
     setCustomLabel('');
   };
@@ -94,19 +120,50 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
   const handleRemoveSocialLink = (index: number) => {
     const updated = (portfolio.socialLinks || []).filter((_, i) => i !== index);
     onUpdateField('socialLinks', updated);
+    onSaveProfile({ socialLinks: updated });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload image via POST /api/v1/uploads/image (Multipart)
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        onUpdateField('avatarUrl', reader.result);
+    if (!file.type.startsWith('image/')) {
+      alert('Vui lòng chọn tệp hình ảnh hợp lệ (PNG, JPG, WEBP, GIF).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Kích thước tệp vượt quá giới hạn 5MB.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Do NOT set Content-Type header so browser automatically sets multipart/form-data boundary
+      const res = await fetchWithAuth(`${API_BASE}/uploads/image`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Tải ảnh đại diện thất bại.');
       }
-    };
-    reader.readAsDataURL(file);
+
+      const data = await res.json();
+      const uploadedUrl = data.url;
+      onUpdateField('avatarUrl', uploadedUrl);
+      await onSaveProfile({ avatarUrl: uploadedUrl });
+    } catch (err: any) {
+      console.error('Failed to upload avatar:', err);
+      alert(err.message || 'Lỗi khi tải ảnh lên máy chủ. Vui lòng thử lại.');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const getPlatformIcon = (platform: string) => {
@@ -117,32 +174,70 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
     return <Globe className="h-3 w-3 text-current" />;
   };
 
+  const handleSaveImmediately = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    onSaveProfile({
+      fullName: portfolio.fullName,
+      title: portfolio.title,
+      tagline: portfolio.tagline,
+      statusText: portfolio.statusText,
+      bio: portfolio.bio,
+      avatarUrl: portfolio.avatarUrl,
+    });
+  };
+
   return (
     <div className="w-full space-y-4 font-sans text-xs">
-      {/* Compact Section Header */}
+      {/* Header Bar */}
       <div className="pb-2 border-b border-[#d6d0c2] dark:border-white/[0.06] flex items-center justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-teal-700 dark:text-teal-400 font-bold">
-          Slide 01 · Identity & Cover
-        </span>
-        <span className="text-[10px] text-stone-600 dark:text-slate-400 font-mono">Định danh</span>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[10px] uppercase tracking-wider text-teal-700 dark:text-teal-400 font-bold">
+            Slide 01 · Identity &amp; Cover
+          </span>
+          <span className="text-[10px] text-stone-600 dark:text-slate-400 font-mono">Định danh</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isSaving ? (
+            <span className="text-[10px] text-teal-700 dark:text-teal-400 flex items-center gap-1 font-medium animate-pulse">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span>Đang lưu...</span>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSaveImmediately}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-sans font-medium text-teal-800 dark:text-teal-300 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 transition-all cursor-pointer"
+            >
+              <Save className="h-3 w-3" />
+              <span>Lưu</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Avatar Compact Row */}
       <div className="p-3 rounded-xl bg-[#fbfaf7] dark:bg-white/[0.02] border border-[#d6d0c2] dark:border-white/[0.06] shadow-xs flex items-center gap-3">
         <div
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !isUploading && fileInputRef.current?.click()}
           className="h-12 w-12 rounded-xl bg-teal-500/10 border border-teal-500/30 overflow-hidden flex items-center justify-center text-teal-600 dark:text-teal-400 shrink-0 cursor-pointer relative group hover:border-teal-400 transition-colors"
           title="Nhấp để thay đổi ảnh đại diện"
         >
-          {portfolio.avatarUrl ? (
+          {isUploading ? (
+            <Loader2 className="h-5 w-5 animate-spin text-teal-500" />
+          ) : portfolio.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={portfolio.avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
           ) : (
             <User className="h-6 w-6 text-teal-600 dark:text-teal-400" />
           )}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-            <Camera className="h-3.5 w-3.5" />
-          </div>
+          {!isUploading && (
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+              <Camera className="h-3.5 w-3.5" />
+            </div>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-bold text-stone-900 dark:text-slate-100 text-xs truncate">
@@ -150,16 +245,17 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
           </div>
           <button
             type="button"
+            disabled={isUploading}
             onClick={() => fileInputRef.current?.click()}
-            className="text-[11px] text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-semibold cursor-pointer transition-colors"
+            className="text-[11px] text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-semibold cursor-pointer transition-colors disabled:opacity-50"
           >
-            Đổi ảnh đại diện
+            {isUploading ? 'Đang tải ảnh...' : 'Đổi ảnh đại diện (Tải lên)'}
           </button>
         </div>
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/png,image/jpeg,image/webp,image/gif"
           onChange={handleFileChange}
           className="hidden"
         />
@@ -176,7 +272,11 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
             type="text"
             required
             value={portfolio.fullName || ''}
-            onChange={(e) => onUpdateField('fullName', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              onUpdateField('fullName', val);
+              triggerDebouncedSave({ fullName: val });
+            }}
             onFocus={() => onFocusField?.('fullName')}
             onBlur={onBlurField}
             placeholder="VD: Thái Đỗ Thịnh"
@@ -193,7 +293,11 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
             type="text"
             required
             value={portfolio.title || ''}
-            onChange={(e) => onUpdateField('title', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              onUpdateField('title', val);
+              triggerDebouncedSave({ title: val });
+            }}
             onFocus={() => onFocusField?.('title')}
             onBlur={onBlurField}
             placeholder="VD: THÁI ĐỖ THỊNH"
@@ -209,7 +313,11 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
             id="field-tagline"
             type="text"
             value={portfolio.tagline || ''}
-            onChange={(e) => onUpdateField('tagline', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              onUpdateField('tagline', val);
+              triggerDebouncedSave({ tagline: val });
+            }}
             onFocus={() => onFocusField?.('tagline')}
             onBlur={onBlurField}
             placeholder="VD: SOFTWARE ENGINEER · FULL-STACK DEVELOPER"
@@ -225,7 +333,11 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
             id="field-statusText"
             type="text"
             value={(portfolio.statusText || '').replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·')}
-            onChange={(e) => onUpdateField('statusText', e.target.value.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·'))}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·');
+              onUpdateField('statusText', val);
+              triggerDebouncedSave({ statusText: val });
+            }}
             onFocus={() => onFocusField?.('statusText')}
             onBlur={onBlurField}
             placeholder="VD: Sẵn sàng hợp tác · Full-time"
@@ -234,7 +346,7 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
         </div>
       </div>
 
-      {/* Field: Bio Statement with AI Polish Trigger */}
+      {/* Field: Bio Statement */}
       <div className="pt-2 border-t border-[#d6d0c2] dark:border-white/[0.06] space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-slate-300 font-semibold">
@@ -255,7 +367,11 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
           id="field-bio"
           rows={4}
           value={portfolio.bio || ''}
-          onChange={(e) => onUpdateField('bio', e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            onUpdateField('bio', val);
+            triggerDebouncedSave({ bio: val });
+          }}
           onFocus={() => onFocusField?.('bio')}
           onBlur={onBlurField}
           placeholder="Tập trung kiến tạo các sản phẩm số tinh tế, hiệu năng vượt trội..."
@@ -329,7 +445,10 @@ export const CoverInspector: React.FC<CoverInspectorProps> = ({
         onClose={() => setAiPolishOpen(false)}
         rawText={portfolio.bio || ''}
         field="bio"
-        onApply={(refinedText) => onUpdateField('bio', refinedText)}
+        onApply={(refinedText) => {
+          onUpdateField('bio', refinedText);
+          onSaveProfile({ bio: refinedText });
+        }}
       />
     </div>
   );

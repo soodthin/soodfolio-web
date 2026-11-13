@@ -427,10 +427,23 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
       expect(summarySection?.className).toContain('text-center');
     });
 
+    const mockPortfolioWithData = {
+      ...mockPortfolio,
+      experiences: [
+        {
+          id: 'e1',
+          roleTitle: 'Senior Dev',
+          companyName: 'Acme Corp',
+          periodText: '2023 - Present',
+          description: 'Architecture & Design Systems',
+        },
+      ],
+    };
+
     it('renders distinct layout and styling elements for Terminal Matrix', () => {
       const { container } = render(
         <VerticalStackDeck
-          data={mockPortfolio}
+          data={mockPortfolioWithData}
           variant="terminal-matrix"
         />
       );
@@ -440,20 +453,23 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
       expect(mainEl?.className).toContain('font-mono');
       expect((mainEl as HTMLElement).style.backgroundColor).toBe('rgb(5, 8, 10)'); // #05080A
 
-      // Terminal CLI banners exist
-      expect(screen.getByText(/soodfolio@production:~\$ init/)).toBeDefined();
-      expect(screen.getByText(/\$ git show project-01 --stat/)).toBeDefined();
-      expect(screen.getByText(/TTY: \/dev\/pts\/0/)).toBeDefined();
-      expect(screen.getByText(/SYS_REG\.METRIC_01:/)).toBeDefined();
-      expect(screen.getByText(/SYS_RES\.LANGUAGES:/)).toBeDefined();
-      expect(screen.getByText(/├── backend\/spring-boot-api\//)).toBeDefined();
-      expect(screen.getByText(/\.\/run-demo\.sh/)).toBeDefined();
+      // Terminal CLI banners and sub-ribbons exist
+      expect(screen.getByText('SYS_HUD')).toBeDefined();
+      expect(screen.getByText('TTY: /dev/pts/0')).toBeDefined();
+      expect(screen.getByText('STATUS: 200 OK')).toBeDefined();
+      expect(screen.getByText('UPTIME: 99.98%')).toBeDefined();
+      expect(screen.getByText('SESSION: ENCRYPTED (ED25519)')).toBeDefined();
+      expect(screen.getByText('> /var/log/syslog --facility=career')).toBeDefined();
+      expect(screen.getByText('> /usr/bin/deployments --manifest=production')).toBeDefined();
+      expect(screen.getByText('> sys.stat: /proc/sys/competencies.matrix')).toBeDefined();
+      expect(screen.getByText('System Resource Matrix')).toBeDefined();
+      expect(screen.getByText('> /net/socket: connect()')).toBeDefined();
     });
 
     it('renders distinct editorial rhythm and typography for Editorial Clean', () => {
       const { container } = render(
         <VerticalStackDeck
-          data={mockPortfolio}
+          data={mockPortfolioWithData}
           variant="editorial-clean"
         />
       );
@@ -463,17 +479,20 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
       expect((mainEl as HTMLElement).style.backgroundColor).toBe('rgb(18, 17, 16)'); // #121110
 
       // Editorial monograph markers
-      expect(screen.getByText(/Volume 2026 · Curated Monograph/)).toBeDefined();
-      expect(screen.getByText(/Feature Story · Project 01/)).toBeDefined();
-      expect(screen.getByText(/THE MONOGRAPH/)).toBeDefined();
-      expect(screen.getByText(/CHAPTER 01 · ARCHITECTURAL PROLOGUE/)).toBeDefined();
-      expect(screen.getByText(/SECTION 04 · INDEX OF PROFICIENCIES/)).toBeDefined();
+      expect(screen.getByText('THE MONOGRAPH')).toBeDefined();
+      expect(screen.getByText('EDITION 2026')).toBeDefined();
+      expect(screen.getByText('ARCHITECTURAL PORTFOLIO SPECIFICATION')).toBeDefined();
+      expect(screen.getByText('CHRONICLE · Career Trajectory')).toBeDefined();
+      expect(screen.getByText('EXHIBITION · Selected Production Systems')).toBeDefined();
+      expect(screen.getByText('COMPENDIUM · Technical Capabilities')).toBeDefined();
+      expect(screen.getByText('Index of Proficiencies')).toBeDefined();
+      expect(screen.getByText('CORRESPONDENCE · Direct Channels')).toBeDefined();
     });
 
     it('renders distinct full-width showcase layout for Spotlight Focus', () => {
       const { container } = render(
         <VerticalStackDeck
-          data={mockPortfolio}
+          data={mockPortfolioWithData}
           variant="spotlight-focus"
         />
       );
@@ -482,15 +501,23 @@ describe('Theme Presets & Design Tokens Comprehensive Test Suite', () => {
       const mainEl = container.querySelector('main[data-theme-preset="spotlight-focus"]');
       expect((mainEl as HTMLElement).style.backgroundColor).toBe('rgb(11, 15, 25)'); // #0B0F19
 
-      // Project 01 has full-width flex container
-      const project01 = container.querySelector('#project-01');
-      expect(project01?.className).toContain('flex flex-col gap-8 w-full');
+      // Keynote sub-ribbon elements
+      expect(screen.getByText('KEYNOTE SHOWCASE')).toBeDefined();
+      expect(screen.getByText('STAGE PRESENTATION MODE')).toBeDefined();
+      expect(screen.getByText('BROADCAST READY')).toBeDefined();
 
-      // Keynote elements
-      expect(screen.getByText(/STAGE 01 · KEYNOTE SHOWCASE/)).toBeDefined();
-      expect(screen.getByText(/Keynote Speaker & Builder/)).toBeDefined();
-      expect(screen.getByText(/KEYNOTE ACT 02 · CAREER TRAJECTORY/)).toBeDefined();
-      expect(screen.getByText(/KEYNOTE CURTAIN CALL · GRAND FINALE/)).toBeDefined();
+      // Keynote section act headers
+      expect(screen.getByText('KEYNOTE ACT 02 · CAREER TRAJECTORY')).toBeDefined();
+      expect(screen.getByText('KEYNOTE ACT 03 · PRODUCTION ARCHITECTURE')).toBeDefined();
+      expect(screen.getByText('KEYNOTE ACT 04 · FOCAL COMPETENCIES')).toBeDefined();
+      expect(screen.getByText('KEYNOTE ACT 05 · COLLABORATION CHANNELS')).toBeDefined();
+
+      // Project showcase cards in Spotlight use rounded-3xl and indigo styling
+      const showcaseCards = container.querySelectorAll('#works .rounded-3xl');
+      expect(showcaseCards.length).toBeGreaterThan(0);
+      showcaseCards.forEach((card) => {
+        expect(card.className).toContain('border-indigo-500/25');
+      });
     });
   });
 

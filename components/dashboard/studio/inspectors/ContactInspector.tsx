@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { PortfolioData, SocialLinkDto } from '@/types/portfolio';
 import {
   Mail,
@@ -13,7 +13,11 @@ import {
   Share2,
   Sparkles,
   Link2,
+  Upload,
+  Loader2,
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/apiClient';
+import { API_BASE } from '@/lib/auth';
 
 interface ContactInspectorProps {
   portfolio: PortfolioData | null;
@@ -59,13 +63,20 @@ export const ContactInspector: React.FC<ContactInspectorProps> = ({
   const [newUrl, setNewUrl] = useState('');
   const [newLabel, setNewLabel] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const resumeFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync state when portfolio changes externally
   React.useEffect(() => {
     if (portfolio.socialLinks) {
       setSocialLinks(portfolio.socialLinks);
     }
   }, [portfolio.socialLinks]);
+
+  const normalizeUrl = (url?: string | null): string | null => {
+    if (!url) return null;
+    const trimmed = url.trim();
+    return trimmed === '' ? null : trimmed;
+  };
 
   const handleStatusChange = (val: string) => {
     onUpdateField('statusText', val.replace(/\s*\/\/\s*/g, ' · ').replace(/\/\//g, '·'));
@@ -73,6 +84,52 @@ export const ContactInspector: React.FC<ContactInspectorProps> = ({
 
   const handleResumeChange = (val: string) => {
     onUpdateField('resumeUrl', val);
+  };
+
+  const handleResumeBlur = () => {
+    onSaveProfile({ resumeUrl: normalizeUrl(portfolio.resumeUrl) });
+  };
+
+  const handleResumeFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Vui lòng chọn tệp định dạng PDF.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Kích thước tệp CV vượt quá giới hạn 10MB.');
+      return;
+    }
+
+    setIsUploadingResume(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Do not set Content-Type header so browser adds multipart boundary
+      const res = await fetchWithAuth(`${API_BASE}/uploads/resume`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Tải tệp CV thất bại.');
+      }
+
+      const data = await res.json();
+      const uploadedUrl = data.url;
+      onUpdateField('resumeUrl', uploadedUrl);
+      await onSaveProfile({ resumeUrl: uploadedUrl });
+    } catch (err: any) {
+      console.error('Failed to upload resume PDF:', err);
+      alert(err.message || 'Lỗi khi tải tệp CV lên máy chủ.');
+    } finally {
+      setIsUploadingResume(false);
+      if (resumeFileInputRef.current) resumeFileInputRef.current.value = '';
+    }
   };
 
   const handleQuickStatusSelect = (opt: string) => {
@@ -159,7 +216,7 @@ export const ContactInspector: React.FC<ContactInspectorProps> = ({
           </span>
         ) : (
           <span className="text-[11px] text-stone-500 flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+            <CheckCircle2 className="h-3 w-3 text-emerald-600 stroke-[2.5]" />
             Đã đồng bộ
           </span>
         )}
@@ -207,7 +264,7 @@ export const ContactInspector: React.FC<ContactInspectorProps> = ({
         </div>
       </div>
 
-      {/* Section 2: Resume / CV Link */}
+      {/* Section 2: Resume / CV Link & PDF Upload */}
       <div className="space-y-2 pt-2 border-t border-[#d6d0c2] dark:border-white/[0.05]">
         <div className="flex items-center justify-between">
           <label
@@ -215,19 +272,41 @@ export const ContactInspector: React.FC<ContactInspectorProps> = ({
             className="text-[11px] font-semibold text-stone-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5"
           >
             <FileText className="h-3 w-3 text-stone-400" />
-            Liên kết CV / Resume (URL)
+            Liên kết CV / Resume (URL hoặc PDF)
           </label>
-          {portfolio.resumeUrl && (
-            <a
-              href={portfolio.resumeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] text-teal-700 dark:text-teal-400 hover:underline flex items-center gap-1"
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={isUploadingResume}
+              onClick={() => resumeFileInputRef.current?.click()}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-sans font-medium text-teal-800 dark:text-teal-300 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 transition-all cursor-pointer disabled:opacity-50"
             >
-              Xem thử
-              <ExternalLink className="h-2.5 w-2.5" />
-            </a>
-          )}
+              {isUploadingResume ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Upload className="h-3 w-3" />
+              )}
+              <span>Tải lên PDF</span>
+            </button>
+            <input
+              ref={resumeFileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={handleResumeFileUpload}
+              className="hidden"
+            />
+            {portfolio.resumeUrl && (
+              <a
+                href={portfolio.resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-teal-700 dark:text-teal-400 hover:underline flex items-center gap-1"
+              >
+                Xem thử
+                <ExternalLink className="h-2.5 w-2.5" />
+              </a>
+            )}
+          </div>
         </div>
 
         <div className="relative">
@@ -236,9 +315,9 @@ export const ContactInspector: React.FC<ContactInspectorProps> = ({
             type="url"
             value={portfolio.resumeUrl || ''}
             onChange={(e) => handleResumeChange(e.target.value)}
-            onBlur={() => onSaveProfile({ resumeUrl: portfolio.resumeUrl })}
+            onBlur={handleResumeBlur}
             onFocus={() => onFocusField?.('resumeUrl')}
-            placeholder="https://drive.google.com/... hoặc link direct PDF"
+            placeholder="https://drive.google.com/... hoặc bấm Tải lên PDF"
             className={`w-full pl-8 pr-3 py-2 rounded-xl text-xs bg-[#ede8dd]/50 dark:bg-[#080d12] border transition-all text-[#202124] dark:text-white placeholder:text-stone-400 dark:placeholder:text-slate-600 outline-none focus:bg-[#fbfaf7] ${
               focusedField === 'resumeUrl'
                 ? 'border-teal-600 ring-1 ring-teal-600/20'
@@ -248,7 +327,7 @@ export const ContactInspector: React.FC<ContactInspectorProps> = ({
           <Link2 className="h-3.5 w-3.5 text-stone-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
         </div>
         <p className="text-[11px] text-stone-500 dark:text-slate-400">
-          Khi có link, nút Tải CV sẽ tự động kích hoạt trên slide Contact.
+          Khi có file hoặc URL, nút &quot;Tải về CV&quot; sẽ tự động kích hoạt trên slide Contact.
         </p>
       </div>
 

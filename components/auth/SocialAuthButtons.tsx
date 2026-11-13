@@ -1,10 +1,38 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
+import { API_BASE } from '@/lib/auth';
 
-export const GITHUB_CLIENT_ID = 'Ov23li3aBSxR9V3u8J2O';
-export const GOOGLE_CLIENT_ID = '622903719114-lilk7gbj5jcc138eva810gvr7uva3fqe.apps.googleusercontent.com';
+export const GITHUB_CLIENT_ID =
+  process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || 'Ov23li3aBSxR9V3u8J2O';
+export const GOOGLE_CLIENT_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  '622903719114-lilk7gbj5jcc138eva810gvr7uva3fqe.apps.googleusercontent.com';
+
+async function fetchOAuthState(): Promise<string> {
+  try {
+    const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
+    const endpoint = origin ? `${origin}/api/v1/auth/oauth/state` : `${API_BASE}/auth/oauth/state`;
+    const res = await fetch(endpoint, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.state) return data.state;
+      if (typeof data === 'string') return data;
+    }
+  } catch {
+    // Graceful fallback
+  }
+  const array = new Uint8Array(16);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(array);
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
 
 export interface SocialAuthButtonsProps {
   label?: string;
@@ -19,8 +47,23 @@ export function SocialAuthButtons({
 }: SocialAuthButtonsProps) {
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [lastProvider, setLastProvider] = useState<string | null>(null);
+  const oauthStateRef = useRef<string>('');
 
   useEffect(() => {
+    // Generate initial state
+    const array = new Uint8Array(16);
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      crypto.getRandomValues(array);
+      oauthStateRef.current = Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    } else {
+      oauthStateRef.current = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    }
+
+    // Prefetch server CSRF state from backend
+    fetchOAuthState().then((state) => {
+      if (state) oauthStateRef.current = state;
+    }).catch(() => {});
+
     try {
       const saved = localStorage.getItem('soodfolio_last_auth_provider');
       if (saved) {
@@ -38,8 +81,9 @@ export function SocialAuthButtons({
     } catch {
       // Ignore storage error
     }
+    const state = oauthStateRef.current || Math.random().toString(36).substring(2);
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback/github`);
-    const githubUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=read:user,user:email`;
+    const githubUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=read:user,user:email&state=${encodeURIComponent(state)}`;
     window.location.href = githubUrl;
   };
 
@@ -50,8 +94,9 @@ export function SocialAuthButtons({
     } catch {
       // Ignore storage error
     }
+    const state = oauthStateRef.current || Math.random().toString(36).substring(2);
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback/google`);
-    const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20email%20profile`;
+    const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20email%20profile&state=${encodeURIComponent(state)}`;
     window.location.href = googleUrl;
   };
 
@@ -81,11 +126,10 @@ export function SocialAuthButtons({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [enableHotkeys, variant]);
 
-  // HERO VARIANT (The Stage-Gate System: Flipped OAuth Hierarchy)
+  // HERO VARIANT
   if (variant === 'hero') {
     return (
       <div className="space-y-2.5">
-        {/* GitHub Hero Primary Button (Obsidian & Alabaster) */}
         <button
           type="button"
           disabled={loadingProvider !== null}
@@ -116,7 +160,6 @@ export function SocialAuthButtons({
           </div>
         </button>
 
-        {/* Google Secondary Button */}
         <button
           type="button"
           disabled={loadingProvider !== null}
@@ -150,7 +193,6 @@ export function SocialAuthButtons({
           </div>
         </button>
 
-        {/* Hairline Divider below buttons */}
         <div className="relative flex items-center justify-center pt-2 pb-1">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-slate-200/80 dark:border-white/[0.08]" />
@@ -163,10 +205,9 @@ export function SocialAuthButtons({
     );
   }
 
-  // DEFAULT VARIANT (Maintains 100% backward compatibility with existing tests & minimal layouts)
+  // DEFAULT VARIANT
   return (
     <div className="space-y-3 pt-2">
-      {/* Subtle Divider */}
       <div className="relative flex items-center justify-center">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-slate-200/80 dark:border-white/10" />
@@ -176,9 +217,7 @@ export function SocialAuthButtons({
         </div>
       </div>
 
-      {/* 2 Small Circular Icon Buttons */}
       <div className="flex items-center justify-center gap-3">
-        {/* GitHub Circular Button */}
         <button
           type="button"
           disabled={loadingProvider !== null}
@@ -196,7 +235,6 @@ export function SocialAuthButtons({
           )}
         </button>
 
-        {/* Google Circular Button */}
         <button
           type="button"
           disabled={loadingProvider !== null}

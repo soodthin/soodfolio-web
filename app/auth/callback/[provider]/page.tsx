@@ -18,6 +18,7 @@ function CallbackHandler() {
   const provider = providerParam.toUpperCase(); // GITHUB or GOOGLE
   const code = searchParams.get('code');
   const error = searchParams.get('error');
+  const state = searchParams.get('state');
 
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -51,11 +52,13 @@ function CallbackHandler() {
 
         const res = await fetch(`${API_BASE}/auth/oauth/exchange`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             provider,
             code,
             redirectUri,
+            state: state || undefined,
           }),
         });
 
@@ -86,7 +89,7 @@ function CallbackHandler() {
     };
 
     exchangeCode();
-  }, [code, error, provider, login, router]);
+  }, [code, error, state, provider, login, router]);
 
   const providerName = provider === 'GITHUB' ? 'GitHub' : provider === 'GOOGLE' ? 'Google' : provider;
 

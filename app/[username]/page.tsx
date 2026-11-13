@@ -3,7 +3,7 @@ import { PortfolioData } from '@/types/portfolio';
 import { VerticalStackDeck } from '@/components/deck/VerticalStackDeck';
 import { DeveloperNotFound } from '@/components/developer-not-found';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE = process.env.API_INTERNAL_URL || 'http://localhost:8080/api/v1';
 
 async function getPortfolio(username: string): Promise<PortfolioData | null> {
   try {

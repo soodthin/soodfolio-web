@@ -20,8 +20,11 @@ vi.mock('@/context/AuthContext', () => ({
 describe('DashboardPage Defensive Offline Resilience', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (authContext.useAuth as any).mockReturnValue({
+    vi.mocked(authContext.useAuth).mockReturnValue({
       user: { id: 'u1', username: 'testdev', fullName: 'Test Developer', role: 'USER' },
+      token: 'mock-token',
+      refreshSession: vi.fn(),
+      login: vi.fn(),
       isAuthenticated: true,
       isLoading: false,
       logout: vi.fn(),

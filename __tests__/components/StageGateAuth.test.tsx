@@ -28,11 +28,11 @@ vi.mock('next/navigation', () => ({
 describe('Stage-Gate Auth System Unit & Anti-Pattern Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete (window as any).location;
-    (window as any).location = {
+    delete (window as unknown as { location?: Location }).location;
+    window.location = {
       origin: 'https://soodfolio.dev',
       href: '',
-    };
+    } as unknown as Location;
     localStorage.clear();
   });
 

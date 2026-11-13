@@ -26,7 +26,7 @@ describe('TelemetryHeatmapModal Robustness & Design Tests', () => {
 
   it('renders without crashing when API returns data without slideHeatmap (undefined slideHeatmap)', async () => {
     // Simulate backend response missing slideHeatmap field entirely
-    (apiClient.fetchWithAuth as any).mockResolvedValue({
+    vi.mocked(apiClient.fetchWithAuth).mockResolvedValue({
       ok: true,
       json: async () => ({
         linkId: 'test-link-1',
@@ -36,7 +36,7 @@ describe('TelemetryHeatmapModal Robustness & Design Tests', () => {
         completionRate: 90,
         // slideHeatmap is deliberately missing / undefined
       }),
-    });
+    } as unknown as Response);
 
     const onClose = vi.fn();
     render(<TelemetryHeatmapModal isOpen={true} onClose={onClose} link={mockLink} />);
@@ -53,7 +53,7 @@ describe('TelemetryHeatmapModal Robustness & Design Tests', () => {
   });
 
   it('renders correctly on network error with fallback simulation', async () => {
-    (apiClient.fetchWithAuth as any).mockRejectedValue(new Error('Network failure'));
+    vi.mocked(apiClient.fetchWithAuth).mockRejectedValue(new Error('Network failure'));
 
     const onClose = vi.fn();
     render(<TelemetryHeatmapModal isOpen={true} onClose={onClose} link={mockLink} />);

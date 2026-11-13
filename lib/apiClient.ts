@@ -1,25 +1,34 @@
 'use client';
 
-import { API_BASE, getAuthToken, getRefreshToken, setAuthSession, clearAuthSession, AuthResponse } from '@/lib/auth';
+import {
+  API_BASE,
+  getAuthToken,
+  setAuthSession,
+  clearAuthSession,
+  hasSessionFlag,
+  AuthResponse,
+} from '@/lib/auth';
 
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value: Response) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
   url: string;
   options: RequestInit;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
       const newOptions = { ...prom.options };
-      newOptions.headers = {
-        ...newOptions.headers,
-        Authorization: `Bearer ${token}`,
-      };
+      const newHeaders = new Headers(newOptions.headers || {});
+      if (token) {
+        newHeaders.set('Authorization', `Bearer ${token}`);
+      }
+      newOptions.headers = newHeaders;
+      newOptions.credentials = 'include';
       fetch(prom.url, newOptions)
         .then((res) => prom.resolve(res))
         .catch((err) => prom.reject(err));
@@ -30,9 +39,9 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 /**
- * Enhanced fetch wrapper with Automatic Transparent JWT Refresh Interceptor.
- * When an API call returns 401 Unauthorized (expired Access Token), it pauses subsequent
- * requests, silently calls /auth/refresh using the Refresh Token, updates cookies,
+ * Enhanced fetch wrapper with Automatic Transparent In-Memory JWT Refresh Interceptor.
+ * When an API call returns 401 Unauthorized, it pauses subsequent requests,
+ * silently calls /auth/refresh using HttpOnly cookie credentials, updates the in-memory token,
  * and replays the original requests without user disruption.
  */
 export async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
@@ -45,6 +54,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
 
   const updatedOptions: RequestInit = {
     ...options,
+    credentials: 'include',
     headers,
   };
 
@@ -58,7 +68,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
         timestamp: new Date().toISOString(),
         status: 503,
         error: 'NETWORK_ERROR',
-        message: `Không thể kết nối đến máy chủ (${errorMsg}). Vui lòng kiểm tra lại dịch vụ Backend.`,
+        message: `Không thể kết nối đến máy chủ (${errorMsg}). Vui lòng kiểm tra lại kết nối mạng.`,
         path: url,
       }),
       {
@@ -69,13 +79,12 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
     );
   }
 
-  // If unauthorized and we have a refresh token, initiate transparent silent refresh
+  // If unauthorized and we have an active session indicator, initiate silent refresh
   if (response.status === 401) {
-    const refreshToken = getRefreshToken();
-
-    if (!refreshToken) {
+    // Check if we even have a session to refresh
+    if (!hasSessionFlag() && !token) {
       clearAuthSession();
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/preview') && window.location.pathname !== '/') {
         window.location.href = '/login?sessionExpired=true';
       }
       return response;
@@ -93,8 +102,9 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
     try {
       const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({}),
       });
 
       if (!refreshRes.ok) {
@@ -108,12 +118,13 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
       processQueue(null, authData.accessToken);
 
       // Re-execute current request
-      headers.set('Authorization', `Bearer ${authData.accessToken}`);
-      return fetch(url, { ...updatedOptions, headers });
+      const retryHeaders = new Headers(updatedOptions.headers || {});
+      retryHeaders.set('Authorization', `Bearer ${authData.accessToken}`);
+      return fetch(url, { ...updatedOptions, headers: retryHeaders, credentials: 'include' });
     } catch (refreshErr) {
       processQueue(refreshErr, null);
       clearAuthSession();
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/preview') && window.location.pathname !== '/') {
         window.location.href = '/login?sessionExpired=true';
       }
       return response;

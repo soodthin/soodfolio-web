@@ -306,6 +306,12 @@ export default function DashboardPage() {
     notifySaved();
   };
 
+  const normalizeUrl = (url?: string | null): string | null => {
+    if (!url) return null;
+    const trimmed = String(url).trim();
+    return trimmed === '' ? null : trimmed;
+  };
+
   // Save profile & hero settings to backend
   const handleSaveProfile = async (updated: Partial<PortfolioData>) => {
     if (!portfolio) return;
@@ -328,11 +334,14 @@ export default function DashboardPage() {
       tagline: updated.tagline ?? portfolio.tagline,
       bio: updated.bio ?? portfolio.bio,
       statusText: cleanStatus,
-      avatarUrl: updated.avatarUrl ?? portfolio.avatarUrl,
-      resumeUrl: updated.resumeUrl ?? portfolio.resumeUrl,
+      avatarUrl: normalizeUrl(updated.avatarUrl !== undefined ? updated.avatarUrl : portfolio.avatarUrl),
+      resumeUrl: normalizeUrl(updated.resumeUrl !== undefined ? updated.resumeUrl : portfolio.resumeUrl),
       themeMode: updated.themeMode ?? portfolio.themeMode,
       themeConfig: updated.themeConfig ?? portfolio.themeConfig,
-      socialLinks: updated.socialLinks ?? portfolio.socialLinks,
+      socialLinks: (updated.socialLinks ?? portfolio.socialLinks)?.map((l) => ({
+        ...l,
+        url: normalizeUrl(l.url) || '',
+      })),
       showExperience: portfolio.showExperience,
       showProjects: portfolio.showProjects,
       showSkills: portfolio.showSkills,
@@ -367,11 +376,18 @@ export default function DashboardPage() {
     if (!portfolio) return;
     setIsSaving(true);
 
+    const cleanPayload = {
+      ...newProj,
+      liveUrl: normalizeUrl(newProj.liveUrl),
+      githubUrl: normalizeUrl(newProj.githubUrl),
+      imageUrl: normalizeUrl(newProj.imageUrl),
+    };
+
     try {
       const res = await fetchWithAuth(`${API_BASE}/portfolios/me/projects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProj),
+        body: JSON.stringify(cleanPayload),
       });
 
       if (res.ok) {
@@ -380,13 +396,13 @@ export default function DashboardPage() {
         showToast('Đã thêm dự án mới thành công.');
       } else {
         const localId = `proj-${Date.now()}`;
-        const localProj: ProjectDto = { ...newProj, id: localId };
+        const localProj: ProjectDto = { ...cleanPayload, id: localId };
         setPortfolio((prev) => (prev ? { ...prev, projects: [...prev.projects, localProj] } : null));
         showToast('Đã thêm dự án vào bản xem trước Studio');
       }
     } catch {
       const localId = `proj-${Date.now()}`;
-      const localProj: ProjectDto = { ...newProj, id: localId };
+      const localProj: ProjectDto = { ...cleanPayload, id: localId };
       setPortfolio((prev) => (prev ? { ...prev, projects: [...prev.projects, localProj] } : null));
       showToast('Đã thêm dự án vào bản xem trước Studio');
     } finally {
@@ -397,11 +413,17 @@ export default function DashboardPage() {
 
   const handleUpdateProject = async (id: string, updated: Partial<ProjectDto>) => {
     if (!portfolio) return;
+    const cleanUpdated = {
+      ...updated,
+      liveUrl: updated.liveUrl !== undefined ? normalizeUrl(updated.liveUrl) : undefined,
+      githubUrl: updated.githubUrl !== undefined ? normalizeUrl(updated.githubUrl) : undefined,
+      imageUrl: updated.imageUrl !== undefined ? normalizeUrl(updated.imageUrl) : undefined,
+    };
     setPortfolio((prev) => {
       if (!prev) return null;
       return {
         ...prev,
-        projects: prev.projects.map((p) => (p.id === id ? { ...p, ...updated } : p)),
+        projects: prev.projects.map((p) => (p.id === id ? { ...p, ...cleanUpdated } : p)),
       };
     });
 
@@ -409,7 +431,7 @@ export default function DashboardPage() {
       await fetchWithAuth(`${API_BASE}/portfolios/me/projects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
+        body: JSON.stringify(cleanUpdated),
       });
     } catch {
       // In-memory update already applied
@@ -476,11 +498,16 @@ export default function DashboardPage() {
     if (!portfolio) return;
     setIsSaving(true);
 
+    const cleanPayload = {
+      ...newExp,
+      companyUrl: normalizeUrl(newExp.companyUrl),
+    };
+
     try {
       const res = await fetchWithAuth(`${API_BASE}/portfolios/me/experiences`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newExp),
+        body: JSON.stringify(cleanPayload),
       });
 
       if (res.ok) {
@@ -489,13 +516,13 @@ export default function DashboardPage() {
         showToast('Đã thêm kinh nghiệm sự nghiệp.');
       } else {
         const localId = `exp-${Date.now()}`;
-        const localExp: ExperienceDto = { ...newExp, id: localId };
+        const localExp: ExperienceDto = { ...cleanPayload, id: localId };
         setPortfolio((prev) => (prev ? { ...prev, experiences: [...prev.experiences, localExp] } : null));
         showToast('Đã thêm kinh nghiệm vào bản xem trước');
       }
     } catch {
       const localId = `exp-${Date.now()}`;
-      const localExp: ExperienceDto = { ...newExp, id: localId };
+      const localExp: ExperienceDto = { ...cleanPayload, id: localId };
       setPortfolio((prev) => (prev ? { ...prev, experiences: [...prev.experiences, localExp] } : null));
       showToast('Đã thêm kinh nghiệm vào bản xem trước');
     } finally {
@@ -506,11 +533,15 @@ export default function DashboardPage() {
 
   const handleUpdateExperience = async (id: string, updated: Partial<ExperienceDto>) => {
     if (!portfolio) return;
+    const cleanUpdated = {
+      ...updated,
+      companyUrl: updated.companyUrl !== undefined ? normalizeUrl(updated.companyUrl) : undefined,
+    };
     setPortfolio((prev) => {
       if (!prev) return null;
       return {
         ...prev,
-        experiences: prev.experiences.map((e) => (e.id === id ? { ...e, ...updated } : e)),
+        experiences: prev.experiences.map((e) => (e.id === id ? { ...e, ...cleanUpdated } : e)),
       };
     });
 
@@ -518,7 +549,7 @@ export default function DashboardPage() {
       await fetchWithAuth(`${API_BASE}/portfolios/me/experiences/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
+        body: JSON.stringify(cleanUpdated),
       });
     } catch {
       // In-memory update applied
