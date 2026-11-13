@@ -115,9 +115,10 @@ export function sanitizeUrl(url?: string | null): string {
 interface VerticalStackDeckProps {
   data: PortfolioData;
   variant?: string | null;
+  onActiveSlideChange?: (slideKey: string) => void;
 }
 
-export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
+export function VerticalStackDeck({ data, variant, onActiveSlideChange }: VerticalStackDeckProps) {
   const activePresetKey = (variant || data.themeConfig || 'classic-deck') as ThemePresetKey;
   const activePreset = getThemePreset(activePresetKey);
   const isSpotlight = activePresetKey === 'spotlight-focus';
@@ -130,6 +131,37 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const lenisRef = useRef<Lenis | null>(null);
+
+  // Scroll-Spy with IntersectionObserver for active slide tracking & telemetry
+  useEffect(() => {
+    if (typeof window === 'undefined' || !onActiveSlideChange) return;
+
+    const sections = document.querySelectorAll<HTMLElement>('[data-slide-key]');
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const slideKey = entry.target.getAttribute('data-slide-key');
+            if (slideKey) {
+              onActiveSlideChange(slideKey);
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '-25% 0px -45% 0px',
+        threshold: 0.05,
+      }
+    );
+
+    sections.forEach((el) => observer.observe(el));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [onActiveSlideChange]);
 
   const handleScrollToTop = useCallback(() => {
     playClickSound();
@@ -582,6 +614,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
         {/* ======================================================================= */}
         <section
           id="summary"
+          data-slide-key="hero"
           className={`w-full max-w-[1280px] mx-auto space-y-10 pt-4 pb-4 ${
             isSpotlight ? 'text-center' : ''
           }`}
@@ -719,7 +752,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
         {/* SECTION 02: EXPERIENCE & EDUCATION                                      */}
         {/* ======================================================================= */}
         {showExperienceSection && (
-          <section id="experience" className="space-y-10 pt-6">
+          <section id="experience" data-slide-key="experience" className="space-y-10 pt-6">
             <div className={`flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#e2e8f0] dark:border-white/10 transition-opacity duration-500 ${
               activeIdx > 1 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
             }`}>
@@ -884,50 +917,54 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
               })}
 
               {/* Dynamic Education Milestones */}
-              {data.showEducation !== false && data.educations && data.educations.map((edu, idx) => {
-                return (
-                  <div key={edu.id || idx} className="relative space-y-3">
-                    <div className="absolute -left-[26px] sm:-left-[34px] lg:-left-[38px] top-1 flex items-center justify-center pointer-events-none" aria-hidden="true">
-                      <div
-                        className={`w-5 h-5 ${isTerminal ? 'rounded-none' : 'rounded-full'} flex items-center justify-center border-2 border-slate-400 bg-white dark:bg-slate-900`}
-                      >
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
-                      <span>ACADEMIC FOUNDATION</span>
-                      {edu.periodText && (
-                        <>
-                          <span>·</span>
-                          <span className="font-normal">{edu.periodText}</span>
-                        </>
-                      )}
-                    </div>
-
-                    <div
-                      className="p-6 rounded-2xl border border-[#e2e8f0] dark:border-white/[0.07] bg-white/95 dark:bg-white/[0.02] space-y-3 shadow-sm"
-                    >
-                      <div className="flex items-center gap-2 text-xs font-mono text-slate-600 dark:text-slate-400">
-                        <GraduationCap className="h-4 w-4" style={{ color: activePreset.accentHex }} />
-                        <span className="font-semibold text-slate-900 dark:text-white text-base">
-                          {edu.institution}
-                        </span>
-                      </div>
-                      {(edu.degree || edu.fieldOfStudy) && (
-                        <div className="text-xs font-mono text-slate-700 dark:text-slate-300">
-                          {edu.degree} {edu.fieldOfStudy ? `· ${edu.fieldOfStudy}` : ''}
+              {data.showEducation !== false && data.educations && data.educations.length > 0 && (
+                <div id="education" data-slide-key="education" className="space-y-6 pt-4">
+                  {data.educations.map((edu, idx) => {
+                    return (
+                      <div key={edu.id || idx} className="relative space-y-3">
+                        <div className="absolute -left-[26px] sm:-left-[34px] lg:-left-[38px] top-1 flex items-center justify-center pointer-events-none" aria-hidden="true">
+                          <div
+                            className={`w-5 h-5 ${isTerminal ? 'rounded-none' : 'rounded-full'} flex items-center justify-center border-2 border-slate-400 bg-white dark:bg-slate-900`}
+                          >
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                          </div>
                         </div>
-                      )}
-                      {edu.highlights && (
-                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-sans">
-                          {edu.highlights}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+
+                        <div className="flex items-center gap-2 font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
+                          <span>ACADEMIC FOUNDATION</span>
+                          {edu.periodText && (
+                            <>
+                              <span>·</span>
+                              <span className="font-normal">{edu.periodText}</span>
+                            </>
+                          )}
+                        </div>
+
+                        <div
+                          className="p-6 rounded-2xl border border-[#e2e8f0] dark:border-white/[0.07] bg-white/95 dark:bg-white/[0.02] space-y-3 shadow-sm"
+                        >
+                          <div className="flex items-center gap-2 text-xs font-mono text-slate-600 dark:text-slate-400">
+                            <GraduationCap className="h-4 w-4" style={{ color: activePreset.accentHex }} />
+                            <span className="font-semibold text-slate-900 dark:text-white text-base">
+                              {edu.institution}
+                            </span>
+                          </div>
+                          {(edu.degree || edu.fieldOfStudy) && (
+                            <div className="text-xs font-mono text-slate-700 dark:text-slate-300">
+                              {edu.degree} {edu.fieldOfStudy ? `· ${edu.fieldOfStudy}` : ''}
+                            </div>
+                          )}
+                          {edu.highlights && (
+                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-sans">
+                              {edu.highlights}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -936,7 +973,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
         {/* SECTION 03: WORKS / PROJECTS                                            */}
         {/* ======================================================================= */}
         {showProjectsSection && (
-          <section id="works" className="space-y-16 pt-6">
+          <section id="works" data-slide-key="projects" className="space-y-16 pt-6">
             <div className={`flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#e2e8f0] dark:border-white/10 transition-opacity duration-500 ${
               activeIdx > 2 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
             }`}>
@@ -1083,7 +1120,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
         {/* SECTION 04: SKILLS                                                      */}
         {/* ======================================================================= */}
         {showSkillsSection && (
-          <section id="skills" className="relative space-y-8 pt-6 overflow-hidden">
+          <section id="skills" data-slide-key="skills" className="relative space-y-8 pt-6 overflow-hidden">
             <div className={`relative z-10 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#e2e8f0] dark:border-white/10 transition-opacity duration-500 ${
               activeIdx > 3 ? 'opacity-40 hover:opacity-100' : 'opacity-100'
             }`}>
@@ -1137,7 +1174,7 @@ export function VerticalStackDeck({ data, variant }: VerticalStackDeckProps) {
         {/* SECTION 05: CONTACT                                                     */}
         {/* ======================================================================= */}
         {showContactSection && (
-          <section id="contact" className="space-y-10 pt-6 pb-8">
+          <section id="contact" data-slide-key="contact" className="space-y-10 pt-6 pb-8">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#e2e8f0] dark:border-white/10">
               <div>
                 <span

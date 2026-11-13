@@ -1,21 +1,31 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { API_BASE } from '@/lib/auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
-
-interface TelemetryPayload {
-  sessionId: string;
+interface TelemetryEventDto {
   slideKey: string;
   dwellSeconds: number;
   deviceType: 'DESKTOP' | 'TABLET' | 'MOBILE';
   userAgent?: string;
 }
 
+interface TelemetryBatchRequest {
+  sessionId: string;
+  events: TelemetryEventDto[];
+}
+
+const MAX_DWELL_SECONDS = 600; // Trần 600s/event chống spam/idle
+
 export function useDeckTelemetry(token: string, activeSlideKey: string) {
-  const enterTimeRef = useRef<number>(Date.now());
+  const enterTimeRef = useRef<number | null>(null);
   const currentSlideRef = useRef<string>(activeSlideKey);
   const sessionIdRef = useRef<string>('');
+
+  // Initialize enterTime on mount
+  useEffect(() => {
+    enterTimeRef.current = Date.now();
+  }, []);
 
   // Initialize or retrieve persistent sessionId for this browser session
   useEffect(() => {
@@ -29,20 +39,28 @@ export function useDeckTelemetry(token: string, activeSlideKey: string) {
     sessionIdRef.current = sid;
   }, []);
 
-  // Helper to send telemetry beacon
+  // Helper to send telemetry batch beacon
   const sendBeaconEvent = (slideKey: string, dwellSeconds: number) => {
     if (!token || dwellSeconds < 1 || typeof window === 'undefined') return;
+
+    // Giới hạn trần 600s/event
+    const boundedDwellSeconds = Math.min(Math.round(dwellSeconds), MAX_DWELL_SECONDS);
+    if (boundedDwellSeconds < 1) return;
 
     const width = window.innerWidth;
     const deviceType: 'DESKTOP' | 'TABLET' | 'MOBILE' =
       width < 640 ? 'MOBILE' : width < 1024 ? 'TABLET' : 'DESKTOP';
 
-    const payload: TelemetryPayload = {
+    const payload: TelemetryBatchRequest = {
       sessionId: sessionIdRef.current || 'anonymous_session',
-      slideKey,
-      dwellSeconds,
-      deviceType,
-      userAgent: navigator.userAgent,
+      events: [
+        {
+          slideKey,
+          dwellSeconds: boundedDwellSeconds,
+          deviceType,
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+        },
+      ],
     };
 
     const endpoint = `${API_BASE}/public/links/${encodeURIComponent(token)}/telemetry`;
@@ -50,7 +68,7 @@ export function useDeckTelemetry(token: string, activeSlideKey: string) {
 
     try {
       // Primary: navigator.sendBeacon (asynchronous non-blocking beacon)
-      if (typeof navigator.sendBeacon === 'function') {
+      if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
         const blob = new Blob([dataString], { type: 'application/json' });
         const success = navigator.sendBeacon(endpoint, blob);
         if (success) return;
@@ -70,50 +88,69 @@ export function useDeckTelemetry(token: string, activeSlideKey: string) {
     }
   };
 
-  // Handle active slide transitions
-  useEffect(() => {
-    const prevSlide = currentSlideRef.current;
+  // Helper to flush current slide dwell time
+  const flushCurrentSlide = () => {
+    if (enterTimeRef.current === null) return;
     const now = Date.now();
     const elapsedSeconds = Math.round((now - enterTimeRef.current) / 1000);
+    if (currentSlideRef.current && elapsedSeconds >= 1) {
+      sendBeaconEvent(currentSlideRef.current, elapsedSeconds);
+    }
+    enterTimeRef.current = now;
+  };
+
+  // Handle active slide transitions
+  useEffect(() => {
+    if (currentSlideRef.current === activeSlideKey) return;
 
     // Send dwell time for the previous slide if it was viewed for at least 1s
-    if (prevSlide && elapsedSeconds >= 1) {
-      sendBeaconEvent(prevSlide, elapsedSeconds);
-    }
-
-    // Reset timer for the new active slide
-    currentSlideRef.current = activeSlideKey;
-    enterTimeRef.current = now;
-  }, [activeSlideKey]);
-
-  // Handle tab visibility change & page unload
-  useEffect(() => {
-    const handleFlushCurrentSlide = () => {
+    if (enterTimeRef.current !== null) {
       const now = Date.now();
       const elapsedSeconds = Math.round((now - enterTimeRef.current) / 1000);
       if (currentSlideRef.current && elapsedSeconds >= 1) {
         sendBeaconEvent(currentSlideRef.current, elapsedSeconds);
       }
-      enterTimeRef.current = now;
-    };
+    }
 
+    // Reset timer for the new active slide
+    currentSlideRef.current = activeSlideKey;
+    enterTimeRef.current = typeof document !== 'undefined' && document.visibilityState === 'hidden'
+      ? null
+      : Date.now();
+  }, [activeSlideKey]);
+
+  // Handle tab visibility change & page unload
+  useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        handleFlushCurrentSlide();
+        // Tạm dừng đếm và flush thời gian đã đọc
+        if (enterTimeRef.current !== null) {
+          const now = Date.now();
+          const elapsedSeconds = Math.round((now - enterTimeRef.current) / 1000);
+          if (currentSlideRef.current && elapsedSeconds >= 1) {
+            sendBeaconEvent(currentSlideRef.current, elapsedSeconds);
+          }
+        }
+        enterTimeRef.current = null;
       } else {
+        // Reset thời điểm bắt đầu đếm khi người dùng quay lại tab
         enterTimeRef.current = Date.now();
       }
     };
 
+    const handleBeforeUnload = () => {
+      flushCurrentSlide();
+    };
+
     window.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleFlushCurrentSlide);
-    window.addEventListener('pagehide', handleFlushCurrentSlide);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
 
     return () => {
-      handleFlushCurrentSlide();
+      flushCurrentSlide();
       window.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleFlushCurrentSlide);
-      window.removeEventListener('pagehide', handleFlushCurrentSlide);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
     };
   }, [token]);
 }

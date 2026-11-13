@@ -24,42 +24,80 @@ describe('TelemetryHeatmapModal Robustness & Design Tests', () => {
     vi.clearAllMocks();
   });
 
-  it('renders without crashing when API returns data without slideHeatmap (undefined slideHeatmap)', async () => {
-    // Simulate backend response missing slideHeatmap field entirely
+  it('renders correctly with real slideStats and deviceBreakdown', async () => {
+    // Real backend TelemetryAnalyticsResponse format
     vi.mocked(apiClient.fetchWithAuth).mockResolvedValue({
       ok: true,
       json: async () => ({
-        linkId: 'test-link-1',
+        shareLinkId: 'test-link-1',
         companyName: 'Shopee Singapore',
         totalViews: 42,
-        totalDwellSeconds: 210,
-        completionRate: 90,
-        // slideHeatmap is deliberately missing / undefined
+        totalDwellSeconds: 200,
+        slideStats: [
+          { slideKey: 'hero', totalDwellSeconds: 40, viewCount: 42, avgDwellSeconds: 0.95 },
+          { slideKey: 'projects', totalDwellSeconds: 100, viewCount: 40, avgDwellSeconds: 2.5 },
+          { slideKey: 'experience', totalDwellSeconds: 60, viewCount: 38, avgDwellSeconds: 1.57 },
+        ],
+        deviceBreakdown: {
+          DESKTOP: 35,
+          TABLET: 5,
+          MOBILE: 2,
+        },
       }),
     } as unknown as Response);
 
     const onClose = vi.fn();
     render(<TelemetryHeatmapModal isOpen={true} onClose={onClose} link={mockLink} />);
 
-    // Should not throw TypeError and should render fallback metrics
     await waitFor(() => {
       expect(screen.getByText('Shopee Singapore')).toBeDefined();
       expect(screen.getByText(/Telemetry Radar & Biểu Đồ Nhiệt/i)).toBeDefined();
     });
 
-    // Verify fallback slide is rendered
-    expect(screen.getByText(/Slide 01: Giới thiệu & Bìa/i)).toBeDefined();
-    expect(screen.getAllByText(/Slide 02: Dự án tiêu biểu/i).length).toBeGreaterThan(0);
+    // Verify Vietnamese mapped slide labels
+    expect(screen.getByText('Giới thiệu & Bìa')).toBeDefined();
+    expect(screen.getAllByText('Dự án tiêu biểu & Case Studies').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Hành trình sự nghiệp')).toBeDefined();
+
+    // Verify calculated % and dwell times
+    expect(screen.getByText('100s')).toBeDefined();
+    expect(screen.getByText('(50%)')).toBeDefined();
+    expect(screen.getAllByText('HOT').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders correctly on network error with fallback simulation', async () => {
+  it('renders friendly empty-state when slideStats is empty instead of fake mock data', async () => {
+    vi.mocked(apiClient.fetchWithAuth).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        shareLinkId: 'test-link-1',
+        companyName: 'Shopee Singapore',
+        totalViews: 0,
+        totalDwellSeconds: 0,
+        slideStats: [],
+        deviceBreakdown: {},
+      }),
+    } as unknown as Response);
+
+    const onClose = vi.fn();
+    render(<TelemetryHeatmapModal isOpen={true} onClose={onClose} link={mockLink} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Chưa có dữ liệu dwell-time/i)).toBeDefined();
+      expect(screen.getByText(/Liên kết này chưa ghi nhận thời gian đọc slide/i)).toBeDefined();
+    });
+
+    // Should NOT show any fake mock slides
+    expect(screen.queryByText(/Slide 01: Giới thiệu & Bìa/i)).toBeNull();
+  });
+
+  it('renders graceful error message on network failure and closes modal on click', async () => {
     vi.mocked(apiClient.fetchWithAuth).mockRejectedValue(new Error('Network failure'));
 
     const onClose = vi.fn();
     render(<TelemetryHeatmapModal isOpen={true} onClose={onClose} link={mockLink} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Phân Bổ Thời Gian Theo Slide/i)).toBeDefined();
+      expect(screen.getByText(/Không thể kết nối đến máy chủ/i)).toBeDefined();
     });
 
     // Check modal close button

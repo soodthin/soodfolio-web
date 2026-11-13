@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { PortfolioData } from '@/types/portfolio';
 import { AuthUser } from '@/lib/auth';
+import { StudioSlideKey } from './types';
 import {
   Layers,
   Copy,
@@ -48,6 +49,7 @@ interface StudioHeaderProps {
   pendingChangesCount?: number;
   themePreset?: string;
   onSelectThemePreset?: (preset: string) => void;
+  onSelectSlide?: (slideKey: StudioSlideKey) => void;
 }
 
 export const StudioHeader: React.FC<StudioHeaderProps> = ({
@@ -70,6 +72,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   onOpenSnapshots,
   themePreset = 'classic-deck',
   onSelectThemePreset,
+  onSelectSlide,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -246,6 +249,20 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             <span>{isPublished ? 'LIVE' : 'DRAFT'}</span>
           </button>
 
+          {/* Settings & AI Button */}
+          {onSelectSlide && (
+            <button
+              type="button"
+              onClick={() => onSelectSlide('settings')}
+              aria-label="Cài đặt & AI"
+              title="Mở bảng Cài đặt giao diện & Gợi ý AI (SettingsInspector)"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#ede8dd] hover:bg-[#e2dcd0] dark:bg-white/[0.04] dark:hover:bg-white/[0.08] border border-[#d6d0c2] dark:border-white/10 text-stone-800 dark:text-slate-200 transition-all cursor-pointer font-sans font-medium text-xs shadow-xs"
+            >
+              <Settings className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              <span className="hidden sm:inline">Cài đặt & AI</span>
+            </button>
+          )}
+
           {/* Primary Action: Publish Button (Accent Kinpaku Gold) */}
           {onPublish && (
             <button
@@ -354,6 +371,24 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                     </span>
                     <span className="text-xs text-stone-500 font-sans">Telemetry</span>
                   </Link>
+
+                  {/* Settings & AI Inspector */}
+                  {onSelectSlide && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectSlide('settings');
+                        setMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-stone-700 dark:text-slate-200 hover:bg-[#ede8dd] dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Settings className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                        <span>Cài đặt & AI</span>
+                      </span>
+                      <span className="text-xs text-stone-500 font-sans">Inspector</span>
+                    </button>
+                  )}
 
                   {/* Theme Switcher Toggle */}
                   <button

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PortfolioData } from '@/types/portfolio';
 import { CreateShareLinkRequest, ShareLinkDto, TemplateLayout } from '@/types/shareLink';
 import { fetchWithAuth } from '@/lib/apiClient';
@@ -53,6 +53,16 @@ export function CreateShareLinkModal({
   const [createdLinkResult, setCreatedLinkResult] = useState<ShareLinkDto | null>(null);
   const [copied, setCopied] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Sync selected projects & experiences when modal opens or portfolio updates
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedProjectIds(portfolio?.projects?.map((p) => p.id) || []);
+      setSelectedExperienceIds(portfolio?.experiences?.map((e) => e.id) || []);
+      setErrorMessage(null);
+      setCreatedLinkResult(null);
+    }
+  }, [isOpen, portfolio]);
 
   if (!isOpen) return null;
 
@@ -112,26 +122,9 @@ export function CreateShareLinkModal({
       });
 
       if (!res.ok) {
-        // Fallback simulate creation if backend endpoint is still pending migration
-        const generatedToken = `st_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://soodfolio.com';
-        const fallbackLink: ShareLinkDto = {
-          id: `link_${Date.now()}`,
-          portfolioId: portfolio?.id || 'me',
-          companyName: companyName.trim(),
-          customLayout,
-          allowedSlideIds: payload.allowedSlideIds,
-          expiresAt: payload.expiresAt,
-          maxViews: payload.maxViews,
-          viewCount: 0,
-          isRevoked: false,
-          createdAt: new Date().toISOString(),
-          token: generatedToken,
-          shareUrl: `${origin}/p/${generatedToken}`,
-        };
-
-        setCreatedLinkResult(fallbackLink);
-        onCreated(fallbackLink);
+        const errorData = await res.json().catch(() => null);
+        const msg = errorData?.message || 'Không thể tạo liên kết ứng tuyển. Vui lòng thử lại sau.';
+        setErrorMessage(msg);
         return;
       }
 
@@ -143,26 +136,7 @@ export function CreateShareLinkModal({
       setCreatedLinkResult(created);
       onCreated(created);
     } catch {
-      // Local fallback on connection error
-      const generatedToken = `st_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
-      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://soodfolio.com';
-      const fallbackLink: ShareLinkDto = {
-        id: `link_${Date.now()}`,
-        portfolioId: portfolio?.id || 'me',
-        companyName: companyName.trim(),
-        customLayout,
-        allowedSlideIds: [...selectedProjectIds, ...selectedExperienceIds],
-        expiresAt: calculateExpiryDate(),
-        maxViews: maxViews === '' ? null : Number(maxViews),
-        viewCount: 0,
-        isRevoked: false,
-        createdAt: new Date().toISOString(),
-        token: generatedToken,
-        shareUrl: `${origin}/p/${generatedToken}`,
-      };
-
-      setCreatedLinkResult(fallbackLink);
-      onCreated(fallbackLink);
+      setErrorMessage('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại sau.');
     } finally {
       setIsSubmitting(false);
     }
@@ -446,6 +420,54 @@ export function CreateShareLinkModal({
                               className="rounded text-teal-500 focus:ring-0"
                             />
                             <span className="truncate font-medium">{proj.title}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Experiences Filter */}
+                {portfolio?.experiences && portfolio.experiences.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-slate-200/60 dark:border-white/[0.04]">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-sans">
+                        <Briefcase className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                        <span>Kinh nghiệm ({selectedExperienceIds.length} trên {portfolio.experiences.length})</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleSelectAllExperiences}
+                        className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline cursor-pointer font-sans font-medium"
+                      >
+                        Chọn tất cả
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {portfolio.experiences.map((exp) => {
+                        const isChecked = selectedExperienceIds.includes(exp.id);
+                        return (
+                          <label
+                            key={exp.id}
+                            className={`p-2.5 rounded-xl border flex items-center gap-2.5 text-xs transition-colors cursor-pointer ${
+                              isChecked
+                                ? 'bg-teal-500/5 border-teal-500/30 text-slate-900 dark:text-white'
+                                : 'bg-slate-50/50 dark:bg-white/[0.01] border-slate-200 dark:border-white/5 text-slate-400 opacity-60'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => handleToggleExperience(exp.id)}
+                              className="rounded text-teal-500 focus:ring-0"
+                            />
+                            <div className="truncate">
+                              <span className="truncate font-medium block">{exp.roleTitle}</span>
+                              <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
+                                @ {exp.companyName}
+                              </span>
+                            </div>
                           </label>
                         );
                       })}

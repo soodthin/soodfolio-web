@@ -270,14 +270,22 @@ export default function DashboardPage() {
     setPortfolio((prev) => (prev ? { ...prev, isPublished: true } : null));
 
     try {
+      // 1. Tạo immutable snapshot bất biến khi publish
+      const snapRes = await fetchWithAuth(`${API_BASE}/portfolios/me/snapshots/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ changelog: 'Phát hành Live công khai từ SoodFolio Studio' }),
+      });
+
+      // 2. Cập nhật trạng thái isPublished
       const res = await fetchWithAuth(`${API_BASE}/portfolios/me/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: true }),
       });
 
-      if (res.ok) {
-        showToast('Đã phát hành slide deck công khai thành công!');
+      if (snapRes.ok || res.ok) {
+        showToast('Đã phát hành và tạo bản chụp snapshot bất biến thành công!');
       } else {
         showToast('Đã lưu bản phát hành cục bộ');
       }
@@ -722,6 +730,7 @@ export default function DashboardPage() {
         onOpenSnapshots={() => setSnapshotModalOpen(true)}
         themePreset={portfolio?.themeConfig || 'classic-deck'}
         onSelectThemePreset={handleSelectThemePreset}
+        onSelectSlide={setActiveSlide}
       />
 
       {/* Main Studio 3-Zone Spatial Keynote Workspace */}
@@ -910,6 +919,10 @@ export default function DashboardPage() {
       <SnapshotHistoryModal
         isOpen={snapshotModalOpen}
         onClose={() => setSnapshotModalOpen(false)}
+        onRestoreSnapshot={(restoredPortfolio) => {
+          setPortfolio(restoredPortfolio);
+          showToast('Đã khôi phục hồ sơ về phiên bản snapshot đã chọn!');
+        }}
         username={portfolio?.username || user?.username || 'member'}
       />
     </div>

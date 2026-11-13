@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShareLinkDto, ShareLinkAnalyticsDto, SlideDwellMetric } from '@/types/shareLink';
+import { ShareLinkDto } from '@/types/shareLink';
 import { fetchWithAuth } from '@/lib/apiClient';
 import { API_BASE } from '@/lib/auth';
 import {
@@ -11,19 +11,62 @@ import {
   Eye,
   CheckCircle2,
   Monitor,
-  Smartphone,
-  Tablet,
   Sparkles,
   TrendingUp,
   Loader2,
-  Building2,
-  Share2
+  Inbox,
 } from 'lucide-react';
+
+interface SlideTelemetryStatDto {
+  slideKey: string;
+  totalDwellSeconds: number;
+  viewCount: number;
+  avgDwellSeconds: number;
+}
+
+interface TelemetryAnalyticsResponse {
+  shareLinkId: string;
+  companyName: string;
+  totalViews: number;
+  totalDwellSeconds: number;
+  slideStats: SlideTelemetryStatDto[];
+  deviceBreakdown?: Record<string, number>;
+}
+
+export interface DisplaySlideMetric {
+  slideKey: string;
+  label: string;
+  dwellSeconds: number;
+  percentage: number;
+  interestLevel: 'high' | 'medium' | 'low';
+}
 
 interface TelemetryHeatmapModalProps {
   isOpen: boolean;
   onClose: () => void;
   link: ShareLinkDto | null;
+}
+
+export function getSlideDisplayName(slideKey: string): string {
+  switch (slideKey) {
+    case 'hero':
+      return 'Giới thiệu & Bìa';
+    case 'experience':
+      return 'Hành trình sự nghiệp';
+    case 'projects':
+      return 'Dự án tiêu biểu & Case Studies';
+    case 'skills':
+      return 'Ma trận kỹ năng & Năng lực';
+    case 'education':
+      return 'Học vấn & Bằng cấp';
+    case 'contact':
+      return 'Kênh liên hệ trực tiếp';
+    default:
+      if (slideKey.startsWith('project-')) {
+        return `Dự án: ${slideKey.replace('project-', '')}`;
+      }
+      return slideKey;
+  }
 }
 
 export function TelemetryHeatmapModal({
@@ -32,83 +75,36 @@ export function TelemetryHeatmapModal({
   link,
 }: TelemetryHeatmapModalProps) {
   const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<ShareLinkAnalyticsDto | null>(null);
+  const [analytics, setAnalytics] = useState<TelemetryAnalyticsResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen || !link) return;
     const currentLink: ShareLinkDto = link;
     let isMounted = true;
 
-    const defaultMetrics: SlideDwellMetric[] = [
-      { slideKey: 'hero', label: 'Slide 01: Giới thiệu & Bìa', dwellSeconds: 18, percentage: 12, interestLevel: 'low' },
-      { slideKey: 'projects', label: 'Slide 02: Dự án tiêu biểu & Case Studies', dwellSeconds: 74, percentage: 48, interestLevel: 'high' },
-      { slideKey: 'experience', label: 'Slide 03: Hành trình sự nghiệp', dwellSeconds: 42, percentage: 27, interestLevel: 'medium' },
-      { slideKey: 'skills', label: 'Slide 04: Ma trận kỹ năng & Năng lực', dwellSeconds: 15, percentage: 10, interestLevel: 'low' },
-      { slideKey: 'contact', label: 'Slide 05: Kênh liên hệ trực tiếp', dwellSeconds: 5, percentage: 3, interestLevel: 'low' },
-    ];
-
     async function loadAnalytics(targetLink: ShareLinkDto) {
       try {
         setLoading(true);
+        setErrorMessage(null);
         const res = await fetchWithAuth(`${API_BASE}/portfolios/me/links/${targetLink.id}/analytics`);
 
         if (res.ok) {
-          const data: any = await res.json();
-          const safeHeatmap: SlideDwellMetric[] = Array.isArray(data?.slideHeatmap) && data.slideHeatmap.length > 0
-            ? data.slideHeatmap
-            : defaultMetrics;
-          const totalDwell = data?.totalDwellSeconds ?? safeHeatmap.reduce((sum, item) => sum + (item.dwellSeconds || 0), 0);
-
+          const data: TelemetryAnalyticsResponse = await res.json();
           if (isMounted) {
-            setAnalytics({
-              linkId: data?.linkId || targetLink.id,
-              companyName: data?.companyName || targetLink.companyName,
-              totalViews: data?.totalViews ?? targetLink.viewCount ?? 1,
-              totalDwellSeconds: totalDwell,
-              completionRate: data?.completionRate ?? 85,
-              lastViewedAt: data?.lastViewedAt || targetLink.updatedAt || targetLink.createdAt,
-              deviceBreakdown: data?.deviceBreakdown || {
-                desktop: 80,
-                tablet: 10,
-                mobile: 10,
-              },
-              slideHeatmap: safeHeatmap,
-            });
+            setAnalytics(data);
           }
           return;
         }
 
-        // Fallback intelligent simulation based on link views if backend is not yet migrated
-        const views = targetLink.viewCount || 1;
-        const totalDwell = defaultMetrics.reduce((sum, item) => sum + item.dwellSeconds, 0);
-
         if (isMounted) {
-          setAnalytics({
-            linkId: targetLink.id,
-            companyName: targetLink.companyName,
-            totalViews: views,
-            totalDwellSeconds: totalDwell,
-            completionRate: 85,
-            lastViewedAt: targetLink.updatedAt || targetLink.createdAt,
-            deviceBreakdown: {
-              desktop: 80,
-              tablet: 10,
-              mobile: 10,
-            },
-            slideHeatmap: defaultMetrics,
-          });
+          setAnalytics(null);
+          setErrorMessage('Không thể tải dữ liệu phân tích từ máy chủ.');
         }
       } catch {
         if (isMounted) {
-          setAnalytics({
-            linkId: targetLink.id,
-            companyName: targetLink.companyName,
-            totalViews: targetLink.viewCount || 1,
-            totalDwellSeconds: 154,
-            completionRate: 80,
-            deviceBreakdown: { desktop: 75, tablet: 15, mobile: 10 },
-            slideHeatmap: defaultMetrics,
-          });
+          setAnalytics(null);
+          setErrorMessage('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -131,13 +127,44 @@ export function TelemetryHeatmapModal({
     return `${mins}m ${remainder}s`;
   };
 
-  const heatmapList = analytics?.slideHeatmap || [];
-  const highestSlide = heatmapList.length > 0
-    ? heatmapList.reduce(
+  const totalDwell = analytics?.totalDwellSeconds || 0;
+  const rawStats = analytics?.slideStats || [];
+
+  // Tính % và map nhãn tiếng Việt cho từng slideKey
+  const displayMetrics: DisplaySlideMetric[] = rawStats.map((stat) => {
+    const pct = totalDwell > 0 ? Math.round((stat.totalDwellSeconds / totalDwell) * 100) : 0;
+    const interestLevel: 'high' | 'medium' | 'low' =
+      pct >= 30 || stat.totalDwellSeconds >= 60
+        ? 'high'
+        : pct >= 15
+        ? 'medium'
+        : 'low';
+
+    return {
+      slideKey: stat.slideKey,
+      label: getSlideDisplayName(stat.slideKey),
+      dwellSeconds: stat.totalDwellSeconds,
+      percentage: pct,
+      interestLevel,
+    };
+  });
+
+  const highestSlide = displayMetrics.length > 0
+    ? displayMetrics.reduce(
         (max, cur) => (cur.dwellSeconds > max.dwellSeconds ? cur : max),
-        heatmapList[0]
+        displayMetrics[0]
       )
     : null;
+
+  // Xử lý deviceBreakdown dạng uppercase (DESKTOP, TABLET, MOBILE)
+  const desktopCount = analytics?.deviceBreakdown?.DESKTOP || 0;
+  const tabletCount = analytics?.deviceBreakdown?.TABLET || 0;
+  const mobileCount = analytics?.deviceBreakdown?.MOBILE || 0;
+  const totalDeviceCount = desktopCount + tabletCount + mobileCount;
+  const desktopPct = totalDeviceCount > 0 ? Math.round((desktopCount / totalDeviceCount) * 100) : 100;
+
+  // Tỷ lệ hoàn thành ước tính dựa trên số slide đã đọc / tổng số slide
+  const completionRate = displayMetrics.length >= 4 ? 90 : displayMetrics.length >= 2 ? 65 : displayMetrics.length > 0 ? 35 : 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -165,7 +192,7 @@ export function TelemetryHeatmapModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -178,9 +205,25 @@ export function TelemetryHeatmapModal({
               <Loader2 className="h-6 w-6 animate-spin text-teal-500" />
               <p className="text-xs font-sans font-medium">Đang tổng hợp dữ liệu Dwell-time...</p>
             </div>
-          ) : !analytics ? (
-            <div className="py-12 text-center text-xs text-slate-400">
-              Chưa có dữ liệu tương tác cho liên kết này.
+          ) : errorMessage ? (
+            <div className="py-12 text-center space-y-2">
+              <p className="text-xs text-rose-500 font-sans font-medium">{errorMessage}</p>
+              <p className="text-xs text-slate-400">Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.</p>
+            </div>
+          ) : displayMetrics.length === 0 ? (
+            /* Friendly Empty-State when no interaction data */
+            <div className="py-14 flex flex-col items-center justify-center text-center space-y-3 px-4">
+              <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400">
+                <Inbox className="h-6 w-6" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Chưa có dữ liệu dwell-time
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                  Liên kết này chưa ghi nhận thời gian đọc slide. Dữ liệu nhiệt sẽ tự động xuất hiện khi nhà tuyển dụng mở và tương tác với trang.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="space-y-6">
@@ -192,7 +235,7 @@ export function TelemetryHeatmapModal({
                     <span>Thời gian đọc</span>
                   </div>
                   <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-mono">
-                    {formatSeconds(analytics.totalDwellSeconds)}
+                    {formatSeconds(totalDwell)}
                   </div>
                 </div>
 
@@ -202,17 +245,17 @@ export function TelemetryHeatmapModal({
                     <span>Lượt xem</span>
                   </div>
                   <div className="text-base sm:text-lg font-bold text-teal-600 dark:text-teal-400 font-mono">
-                    {analytics.totalViews} lượt
+                    {analytics?.totalViews ?? link.viewCount ?? 0} lượt
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.06] space-y-1">
                   <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-sans font-medium uppercase">
                     <CheckCircle2 className="h-3 w-3" />
-                    <span>Đọc hết slide</span>
+                    <span>Tỷ lệ hoàn thành</span>
                   </div>
                   <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-mono">
-                    {analytics.completionRate}%
+                    {completionRate}%
                   </div>
                 </div>
 
@@ -222,7 +265,7 @@ export function TelemetryHeatmapModal({
                     <span>Thiết bị chính</span>
                   </div>
                   <div className="text-xs font-bold text-slate-800 dark:text-slate-200 pt-0.5">
-                    Desktop ({analytics.deviceBreakdown?.desktop ?? 80}%)
+                    Desktop ({desktopPct}%)
                   </div>
                 </div>
               </div>
@@ -239,7 +282,7 @@ export function TelemetryHeatmapModal({
                 </div>
 
                 <div className="space-y-3 p-4 rounded-xl bg-slate-50/70 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.06]">
-                  {heatmapList.map((item) => {
+                  {displayMetrics.map((item) => {
                     const isHigh = item.interestLevel === 'high';
                     const isMed = item.interestLevel === 'medium';
                     return (
@@ -250,7 +293,7 @@ export function TelemetryHeatmapModal({
                           </span>
                           <div className="flex items-center gap-2 flex-shrink-0 text-[11px]">
                             {isHigh && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-400 border border-teal-500/30 flex items-center gap-1 font-sans font-medium">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-600 dark:text-teal-400 border border-teal-500/30 flex items-center gap-1 font-sans font-medium">
                                 <TrendingUp className="w-2.5 h-2.5" />
                                 HOT
                               </span>
@@ -282,7 +325,7 @@ export function TelemetryHeatmapModal({
               </div>
 
               {/* AI Strategic Recruiter Insights */}
-              {highestSlide && (
+              {highestSlide && highestSlide.dwellSeconds > 0 && (
                 <div className="p-4 rounded-xl bg-teal-500/10 dark:bg-teal-400/5 border border-teal-500/20 flex items-start gap-3 text-xs leading-relaxed">
                   <Sparkles className="h-4 w-4 text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5" />
                   <div className="space-y-1">

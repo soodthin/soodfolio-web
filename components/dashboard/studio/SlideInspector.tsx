@@ -124,10 +124,14 @@ export const SlideInspector: React.FC<SlideInspectorProps> = ({
       {activeSlide === 'experience' && (
         <ExperienceInspector
           experiences={portfolio?.experiences || []}
+          educations={portfolio?.educations || []}
           onAddExperience={onAddExperience}
           onUpdateExperience={onUpdateExperience}
           onDeleteExperience={onDeleteExperience}
           onMoveExperience={onMoveExperience}
+          onUpdateEducations={(updatedEducations) =>
+            onUpdatePortfolioField('educations', updatedEducations)
+          }
           isSaving={isSaving}
         />
       )}

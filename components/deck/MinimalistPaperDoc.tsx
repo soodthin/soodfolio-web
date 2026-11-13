@@ -46,15 +46,16 @@ interface MinimalistPaperDocProps {
   companyName?: string;
   onSwitchLayout?: () => void;
   activeLayout?: 'CINEMATIC_DECK' | 'MINIMALIST_DOC';
+  onActiveSlideChange?: (slideKey: string) => void;
 }
 
 const SECTIONS = [
-  { id: 'overview', label: '01. Giới thiệu', icon: Sparkles },
-  { id: 'experience', label: '02. Kinh nghiệm', icon: Briefcase },
-  { id: 'projects', label: '03. Dự án tiêu biểu', icon: FolderGit2 },
-  { id: 'skills', label: '04. Năng lực & Công nghệ', icon: Cpu },
-  { id: 'education', label: '05. Học vấn & Chứng chỉ', icon: GraduationCap },
-  { id: 'contact', label: '06. Kênh liên hệ', icon: Mail },
+  { id: 'overview', slideKey: 'hero', label: '01. Giới thiệu', icon: Sparkles },
+  { id: 'experience', slideKey: 'experience', label: '02. Kinh nghiệm', icon: Briefcase },
+  { id: 'projects', slideKey: 'projects', label: '03. Dự án tiêu biểu', icon: FolderGit2 },
+  { id: 'skills', slideKey: 'skills', label: '04. Năng lực & Công nghệ', icon: Cpu },
+  { id: 'education', slideKey: 'education', label: '05. Học vấn & Chứng chỉ', icon: GraduationCap },
+  { id: 'contact', slideKey: 'contact', label: '06. Kênh liên hệ', icon: Mail },
 ];
 
 export function MinimalistPaperDoc({
@@ -62,6 +63,7 @@ export function MinimalistPaperDoc({
   companyName,
   onSwitchLayout,
   activeLayout = 'MINIMALIST_DOC',
+  onActiveSlideChange,
 }: MinimalistPaperDocProps) {
   const [activeSection, setActiveSection] = useState('overview');
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -89,26 +91,40 @@ export function MinimalistPaperDoc({
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
-  // Scroll spy for Table of Contents
+  // Scroll spy with IntersectionObserver for TOC and telemetry tracking
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPos = window.scrollY + 200;
-      for (const section of SECTIONS) {
-        const el = document.getElementById(section.id);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPos >= top && scrollPos < top + height) {
-            setActiveSection(section.id);
-            break;
-          }
-        }
-      }
-    };
+    if (typeof window === 'undefined') return;
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    const sections = document.querySelectorAll<HTMLElement>('[data-slide-key]');
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const slideKey = entry.target.getAttribute('data-slide-key');
+            if (slideKey) {
+              const matchedSection = SECTIONS.find((s) => s.slideKey === slideKey || s.id === slideKey);
+              if (matchedSection) {
+                setActiveSection(matchedSection.id);
+              }
+              onActiveSlideChange?.(slideKey);
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '-25% 0px -45% 0px',
+        threshold: 0.05,
+      }
+    );
+
+    sections.forEach((el) => observer.observe(el));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [onActiveSlideChange]);
 
   const fullName = portfolio.fullName || portfolio.title || 'Ứng viên SoodFolio';
   const tagline = portfolio.tagline || 'Chuyên gia Kỹ thuật & Thiết kế';
@@ -227,7 +243,7 @@ export function MinimalistPaperDoc({
         <main className="flex-1 max-w-4xl bg-white dark:bg-[#0c121c] border border-slate-200 dark:border-white/[0.08] shadow-sm rounded-2xl p-8 sm:p-14 print:p-0 print:border-none print:shadow-none print:bg-transparent space-y-12 transition-colors">
           
           {/* SECTION 1: IDENTITY & OVERVIEW */}
-          <section id="overview" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08] break-inside-avoid">
+          <section id="overview" data-slide-key="hero" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08] break-inside-avoid">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
               <div className="space-y-3 flex-1 min-w-0">
                 {companyName && (
@@ -286,7 +302,7 @@ export function MinimalistPaperDoc({
 
           {/* SECTION 2: WORK EXPERIENCE */}
           {portfolio.showExperience && portfolio.experiences && portfolio.experiences.length > 0 && (
-            <section id="experience" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08]">
+            <section id="experience" data-slide-key="experience" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08]">
               <div className="flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                 <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-slate-900 dark:text-white">
@@ -347,7 +363,7 @@ export function MinimalistPaperDoc({
 
           {/* SECTION 3: SELECTED PROJECTS */}
           {portfolio.showProjects && portfolio.projects && portfolio.projects.length > 0 && (
-            <section id="projects" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08]">
+            <section id="projects" data-slide-key="projects" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08]">
               <div className="flex items-center gap-2">
                 <FolderGit2 className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                 <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-slate-900 dark:text-white">
@@ -426,7 +442,7 @@ export function MinimalistPaperDoc({
 
           {/* SECTION 4: CORE COMPETENCIES / SKILLS */}
           {portfolio.showSkills && portfolio.skills && portfolio.skills.length > 0 && (
-            <section id="skills" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08] break-inside-avoid">
+            <section id="skills" data-slide-key="skills" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08] break-inside-avoid">
               <div className="flex items-center gap-2">
                 <Cpu className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                 <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-slate-900 dark:text-white">
@@ -464,7 +480,7 @@ export function MinimalistPaperDoc({
 
           {/* SECTION 5: EDUCATION & CERTIFICATIONS */}
           {portfolio.showEducation && portfolio.educations && portfolio.educations.length > 0 && (
-            <section id="education" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08] break-inside-avoid">
+            <section id="education" data-slide-key="education" className="space-y-6 pb-8 border-b border-slate-200/80 dark:border-white/[0.08] break-inside-avoid">
               <div className="flex items-center gap-2">
                 <GraduationCap className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                 <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-slate-900 dark:text-white">
@@ -498,7 +514,7 @@ export function MinimalistPaperDoc({
           )}
 
           {/* SECTION 6: CONTACT & VERIFICATION */}
-          <section id="contact" className="space-y-4 break-inside-avoid">
+          <section id="contact" data-slide-key="contact" className="space-y-4 break-inside-avoid">
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-teal-600 dark:text-teal-400" />
               <h2 className="text-sm font-mono font-bold uppercase tracking-wider text-slate-900 dark:text-white">

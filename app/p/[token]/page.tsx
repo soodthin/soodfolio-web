@@ -212,8 +212,8 @@ export default function TargetedDeckViewerPage({ params }: PageProps) {
 
   return (
     <div className="relative min-h-screen w-full">
-      {/* Top Banner: Target Company & Layout Switcher (Floating Bar) */}
-      <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 dark:bg-[#0c141d]/90 border border-slate-700/60 dark:border-white/15 backdrop-blur-md shadow-2xl text-xs print:hidden animate-in fade-in slide-in-from-top-3 duration-300">
+      {/* Floating Banner: Target Company & Layout Switcher (Dời xuống bottom-5 để không đè Header) */}
+      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 dark:bg-[#0c141d]/90 border border-slate-700/60 dark:border-white/15 backdrop-blur-md shadow-2xl text-xs print:hidden animate-in fade-in slide-in-from-bottom-3 duration-300">
         <div className="flex items-center gap-2 pr-2 border-r border-slate-700 dark:border-white/10">
           <Building2 className="h-3.5 w-3.5 text-teal-400 flex-shrink-0" />
           <span className="font-semibold text-white truncate max-w-[130px] sm:max-w-[220px]">
@@ -243,10 +243,14 @@ export default function TargetedDeckViewerPage({ params }: PageProps) {
         </button>
       </div>
 
-      {/* Render Active Template */}
+      {/* Render Active Template with Scroll-Spy Telemetry Hook */}
       {layout === 'CINEMATIC_DECK' ? (
         <div className="w-full">
-          <VerticalStackDeck data={filteredPortfolio} variant={filteredPortfolio.themeConfig} />
+          <VerticalStackDeck
+            data={filteredPortfolio}
+            variant={filteredPortfolio.themeConfig}
+            onActiveSlideChange={setActiveSlideKey}
+          />
         </div>
       ) : (
         <div className="w-full">
@@ -255,6 +259,7 @@ export default function TargetedDeckViewerPage({ params }: PageProps) {
             companyName={linkData.companyName}
             onSwitchLayout={toggleLayout}
             activeLayout="MINIMALIST_DOC"
+            onActiveSlideChange={setActiveSlideKey}
           />
         </div>
       )}
